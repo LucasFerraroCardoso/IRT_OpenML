@@ -96,7 +96,7 @@ for f in tqdm(range(len(list_data_irt))):
 
     #Adciona os parametros em um dicionario
     parameter_dict = {}
-    parameters = ['Discriminacao','Dificuldade','Advinhacao']
+    parameters = ['Discriminacao','Dificuldade','Adivinhacao']
     for i in range(len(par)):
         try:
             if par[i][0] == 'V':

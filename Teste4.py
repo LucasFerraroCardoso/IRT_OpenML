@@ -24,12 +24,12 @@ def freqParam(irt_dict_tmp):
         for i in irt_dict_tmp[key]['Dificuldade']:
             if i[1] >= 1:
                 countdif += 1
-        for i in irt_dict_tmp[key]['Advinhacao']:
+        for i in irt_dict_tmp[key]['Adivinhacao']:
             if i[1] > 0.2:
                 countges += 1
         tmp_dict[key]['Discriminacao'] = countdis/len(irt_dict_tmp[key]['Discriminacao'])
         tmp_dict[key]['Dificuldade'] = countdif/len(irt_dict_tmp[key]['Dificuldade'])
-        tmp_dict[key]['Advinhacao'] = countges/len(irt_dict_tmp[key]['Advinhacao'])
+        tmp_dict[key]['Advinhacao'] = countges/len(irt_dict_tmp[key]['Adivinhacao'])
         
     return tmp_dict
 
@@ -42,7 +42,7 @@ def verificaParametros(irt_dict):
         d = {}
         d['Discriminacao'] = list(zip(tam,irt_dict[key][:,0]))
         d['Dificuldade'] = list(zip(tam,irt_dict[key][:,1]))
-        d['Advinhacao']= list(zip(tam,irt_dict[key][:,2]))
+        d['Adivinhacao']= list(zip(tam,irt_dict[key][:,2]))
         
         
         parameters_dict[key] = d
@@ -58,7 +58,7 @@ def printFreq(tmp_dict):
     for n in name:
         dis.append((n,tmp_dict[n]['Discriminacao']))
         dif.append((n,tmp_dict[n]['Dificuldade']))
-        ges.append((n,tmp_dict[n]['Advinhacao']))
+        ges.append((n,tmp_dict[n]['Adivinhacao']))
         
     dis.sort(key=lambda tup: tup[1], reverse=True)
     dif.sort(key=lambda tup: tup[1], reverse=True)
