@@ -29,7 +29,7 @@ def freqParam(irt_dict_tmp):
                 countges += 1
         tmp_dict[key]['Discriminacao'] = countdis/len(irt_dict_tmp[key]['Discriminacao'])
         tmp_dict[key]['Dificuldade'] = countdif/len(irt_dict_tmp[key]['Dificuldade'])
-        tmp_dict[key]['Advinhacao'] = countges/len(irt_dict_tmp[key]['Adivinhacao'])
+        tmp_dict[key]['Adivinhacao'] = countges/len(irt_dict_tmp[key]['Adivinhacao'])
         
     return tmp_dict
 

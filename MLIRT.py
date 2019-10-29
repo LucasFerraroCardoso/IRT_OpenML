@@ -112,6 +112,7 @@ for f in tqdm(range(len(list_data_irt))):
         parameter_dict[item] = tmp_dict
 
     dataframe = pd.DataFrame.from_dict(parameter_dict)
+    dataframe = dataframe.reindex(index = parameters)
     
     #Salva os parametros do IRT na pasta de cada dataset
     dataframe.transpose().to_csv(r''+os.getcwd()+out+'/'+list_dir[f]+'/irt_item_param.csv')
