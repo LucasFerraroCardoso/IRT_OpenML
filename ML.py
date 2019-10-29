@@ -166,6 +166,9 @@ for dataset in datasetlist:
     #Lista de respostas certas
         comparation = compare(y,res)
         lista_resp.append(comparation)
+        mlp_resp.append(comparation)
+        
+    
     
     #Adcionando os classificadores artificiais
     #Classificador aleatorio
@@ -198,6 +201,7 @@ for dataset in datasetlist:
         lista_resp.append(comparation)
         mlp_resp.append(comparation)
         lista_media.append(accuracy_score(y, i))
+        resp_final.append(accuracy_score(y, i))
     
     item_name = ['V'+str(i+1) for i in range(len(y))]
     
@@ -215,11 +219,15 @@ for dataset in datasetlist:
     df = pd.DataFrame(lista_resp, columns = item_name)
     df.to_csv(r''+os.getcwd()+'/'+out+'/'+dataset.name+'/'+dataset.name+'.csv',index=0)
     
+    df = pd.DataFrame(mlp_score)
+    df.to_csv(r''+os.getcwd()+'/'+out+'/'+dataset.name+'/'+dataset.name+'_mlp.csv',index=0)
+    
     list_algML = ['GaussianNB','BernoulliNB','KNeighborsClassifier(2)','KNeighborsClassifier(3)',
            'KNeighborsClassifier(5)','KNeighborsClassifier(8)','DecisionTreeClassifier()',
            'RandomForestClassifier(3_estimators)','RandomForestClassifier(5_estimators)',
            'RandomForestClassifier','SVC','MLPClassifier','rand1','rand2','rand3','majoritario','minoritario',
            'pessimo','otimo']
+    
     
     #Salva o csv contendo a media dos metodos durante o k-fold
     aux = list(zip(list_algML,lista_media))
