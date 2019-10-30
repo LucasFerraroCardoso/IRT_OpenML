@@ -7,7 +7,6 @@ Created on Sat Oct 26 18:20:49 2019
 
 import os
 import pandas as pd
-from tqdm import tqdm
 import rpy2.robjects.packages as rpackages
 import rpy2.robjects as robjects
 from rpy2.robjects.vectors import StrVector
@@ -32,11 +31,12 @@ def insertMongo(dici,mongoClient,namedata):
     
     db = client.IRT
     
-    print("Inserindo dados no MongoDB\n")
+    print("\nInserindo dados no MongoDB")
     #for i in tqdm(dici):
     tmp = {}
     tmp["name_dataset"] = namedata
-    tmp.update(dici[i])
+    tmp.update(dici)
+    
 #        lista = list(tmp.keys())
 #        for j in lista:
 #            if '.' in j:
@@ -80,12 +80,13 @@ for path in list_dir:
 #file = ('heart-statlog_irt.csv')
 #data = robjects.r('PL3.rasch<-tpm(read.csv(file="heart-statlog_irt.csv"))')
             
-print('Iniciando calculo dos parametros do IRT para os datasets: ',list_dir)
+#print('\nIniciando calculo dos parametros do IRT para os datasets: ',list_dir)
 #Inicia o calculo do IRT para todos os datasets
-for f in tqdm(range(len(list_data_irt))):
+for f in range(len(list_data_irt)):
+    
+    print("Calculando os parametros do IRT para o dataset: ",list_data_irt[f])
     
     #Calcula os parametros do IRT com o pacote ltm do R
-    
     file = os.getcwd()+'/'+out+'/'+list_dir[f]+'/'+list_data_irt[f]
     file = file.replace('\\','/')
     data = robjects.r('PL3.rasch<-tpm(read.csv(file="'+file+'"))')
@@ -119,5 +120,6 @@ for f in tqdm(range(len(list_data_irt))):
     #Insere os dados do IRT no MongoDB
     try:
         insertMongo(parameter_dict,mongoClient,list_dir[f])
+        print('==> Dados salvos com sucesso :)\n')
     except:
-        print("Não foi possivel inserir os dados no MongoDB :/ \nVerifique se a url passada do banco está correta, assim como nome e senha")
+        print("Não foi possivel inserir os dados no MongoDB :/ \nVerifique se a url passada do banco está correta, assim como nome e senha\n")

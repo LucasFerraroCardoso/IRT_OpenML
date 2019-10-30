@@ -215,6 +215,10 @@ for dataset in datasetlist:
         os.mkdir('output/'+dataset.name)
         print("Diretorio " , dataset.name ,  " criado\n")
     
+    #Salvando itens usados para o teste
+    df = pd.DataFrame(list(zip(X_test,y_test_label)),columns = ['Item','Classe'])
+    df.to_csv(r''+os.getcwd()+'/'+out+'/'+dataset.name+'/'+dataset.name+'_test.csv',index=0)
+    
     #Cria o arquivo contendo as repostas dos metodos de ML para gerar os parametros do IRT
     df = pd.DataFrame(mlp_resp, columns = item_name)
     df.to_csv(r''+os.getcwd()+'/'+out+'/'+dataset.name+'/'+dataset.name+'_irt.csv',index=0)
