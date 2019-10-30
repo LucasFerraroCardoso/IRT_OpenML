@@ -23,6 +23,8 @@ import numpy as np
 import warnings
 import random
 import argparse
+from sklearn.model_selection import train_test_split
+
 warnings.filterwarnings("ignore")
 
 def compare(original, res):
@@ -83,8 +85,13 @@ for dataset in datasetlist:
         dataset_format='array',
         target=dataset.default_target_attribute)
 
+    #Split estratificado
+    X_train, X_test, y_train_label, y_test_label = train_test_split(X, y,
+                                                    stratify=y, 
+                                                    test_size=0.3)
+
     #Quantidade de folds para treino
-    cv = KFold(n_splits=5, random_state=42, shuffle=False)
+    cv = KFold(n_splits=10, random_state=42, shuffle=False)
     
     #Listas de media de treinamento, acuracia final e vetor com as respostas
     mlp_media =[]
@@ -100,9 +107,9 @@ for dataset in datasetlist:
         clf = MLPClassifier(max_iter=n)
         print('Iniciando o metodo: ',clf)
         
-        for train_index, test_index in cv.split(X):
+        for train_index, test_index in cv.split(X_train):
         
-            train, test, train_labels, test_labels = X[train_index], X[test_index], y[train_index], y[test_index]
+            train, test, train_labels, test_labels = X_train[train_index], X_train[test_index], y_train_label[train_index], y_train_label[test_index]
             clf.fit(train, train_labels)
             preds = clf.predict(test)
             list_accur.append(accuracy_score(test_labels, preds))
@@ -112,13 +119,13 @@ for dataset in datasetlist:
         print('Media de Acuracia : ',media)
         print('-'*60)
             
-        res = clf.predict(X)
-        score = clf.score(X,y, sample_weight=None )
+        res = clf.predict(X_test)
+        score = clf.score(X_test,y_test_label, sample_weight=None )
         mlp_score.append(score)
         print("Teste com o todo o dataset: ",score)
         print('-'*60)
     #Lista de respostas certas
-        comparation = compare(y,res)
+        comparation = compare(y_test_label,res)
         mlp_resp.append(comparation)
 
 
@@ -143,28 +150,25 @@ for dataset in datasetlist:
         
         print('Iniciando o metodo: ',clf)
         
-        for train_index, test_index in cv.split(X):
-            #print("Train Index: ", train_index, "\n")
-            #print("Test Index: ", test_index)
+        for train_index, test_index in cv.split(X_train):
         
-            train, test, train_labels, test_labels = X[train_index], X[test_index], y[train_index], y[test_index]
+            train, test, train_labels, test_labels = X_train[train_index], X_train[test_index], y_train_label[train_index], y_train_label[test_index]
             clf.fit(train, train_labels)
             preds = clf.predict(test)
             list_accur.append(accuracy_score(test_labels, preds))
-            #list_accur.append(clf.score(test,test_labels, sample_weight=None ))
             
         media = np.mean(list_accur)
         lista_media.append(media)
         print('Media de Acuracia : ',media)
         print('-'*60)
             
-        res = clf.predict(X)
-        score = clf.score(X,y, sample_weight=None )
+        res = clf.predict(X_test)
+        score = clf.score(X_test,y_test_label, sample_weight=None )
         resp_final.append(score)
         print("Teste com o todo o dataset: ",score)
         print('-'*60)
     #Lista de respostas certas
-        comparation = compare(y,res)
+        comparation = compare(y_test_label,res)
         lista_resp.append(comparation)
         mlp_resp.append(comparation)
         
@@ -172,24 +176,24 @@ for dataset in datasetlist:
     
     #Adcionando os classificadores artificiais
     #Classificador aleatorio
-    rand1 = [random.randint(0,1) for i in range(len(y))]
-    rand2 = [random.randint(0,1) for i in range(len(y))]
-    rand3 = [random.randint(0,1) for i in range(len(y))]
+    rand1 = [random.randint(0,1) for i in range(len(y_test_label))]
+    rand2 = [random.randint(0,1) for i in range(len(y_test_label))]
+    rand3 = [random.randint(0,1) for i in range(len(y_test_label))]
     #rand4 = [random.randint(0,1) for i in range(len(y))]
     
     #Adcionando calssificador majoritario e minoritario
     major = []
     minor = []
     if list(y).count(0) == dataset.qualities['MajorityClassSize']:
-        major = [0 for i in range(len(y))]
-        minor = [1 for i in range(len(y))]
+        major = [0 for i in range(len(y_test_label))]
+        minor = [1 for i in range(len(y_test_label))]
     else:
-        major = [1 for i in range(len(y))]
-        minor = [0 for i in range(len(y))]
+        major = [1 for i in range(len(y_test_label))]
+        minor = [0 for i in range(len(y_test_label))]
     
     #Adcionando calssificadores pessimos e otimos
-    otimo = list(y)
-    pessimo = [0 if i == 1 else 1 for i in y]
+    otimo = list(y_test_label)
+    pessimo = [0 if i == 1 else 1 for i in y_test_label]
     
     #Lista de classificadores artificiais
     list_tmp = [rand1,rand2,rand3,major,minor,pessimo,otimo]
@@ -197,13 +201,13 @@ for dataset in datasetlist:
     #Adcionando os classificadores artificiais na lista de respostas
     #Adcionando as acuracias dos classificadores artificiais
     for i in list_tmp:
-        comparation = compare(y,i)
+        comparation = compare(y_test_label,i)
         lista_resp.append(comparation)
         mlp_resp.append(comparation)
-        lista_media.append(accuracy_score(y, i))
-        resp_final.append(accuracy_score(y, i))
+        lista_media.append(accuracy_score(y_test_label, i))
+        resp_final.append(accuracy_score(y_test_label, i))
     
-    item_name = ['V'+str(i+1) for i in range(len(y))]
+    item_name = ['V'+str(i+1) for i in range(len(y_test_label))]
     
     name_tmp = dataset.name.replace('-','_')
     #Cria a pasta para o dataset individualmente

@@ -19,7 +19,7 @@ def freqParam(irt_dict_tmp):
         countdif = 0
         countges = 0
         for i in irt_dict_tmp[key]['Discriminacao']:
-            if i[1] >= 0.5:
+            if i[1] >= 3:
                 countdis += 1
         for i in irt_dict_tmp[key]['Dificuldade']:
             if i[1] >= 1:

@@ -22,7 +22,6 @@ def normalize(lista,vmin,vmax):
 
 def insertMongo(dici,mongoClient,namedata):
     from pymongo import MongoClient
-    import tqdm
 
     class Connect(object):
         @staticmethod    
@@ -34,18 +33,18 @@ def insertMongo(dici,mongoClient,namedata):
     db = client.IRT
     
     print("Inserindo dados no MongoDB\n")
-    for i in tqdm(dici):
-        tmp = {}
-        tmp["name_dataset"] = namedata
-        tmp.update(dici[i])
-        lista = list(tmp.keys())
-        for j in lista:
-            if '.' in j:
-                key = j.replace('.','_')
-                value = tmp[j]
-                del tmp[j]
-                tmp[key] = value
-        db.inventory.insert_one(tmp)
+    #for i in tqdm(dici):
+    tmp = {}
+    tmp["name_dataset"] = namedata
+    tmp.update(dici[i])
+#        lista = list(tmp.keys())
+#        for j in lista:
+#            if '.' in j:
+#                key = j.replace('.','_')
+#                value = tmp[j]
+#                del tmp[j]
+#                tmp[key] = value
+    db.inventory.insert_one(tmp)
 
 mongoClient = "mongodb+srv://Lucas:luigiferraro@openml-d6ap5.mongodb.net/test?retryWrites=true&w=majority"
 
