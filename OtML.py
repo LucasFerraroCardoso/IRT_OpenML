@@ -47,13 +47,9 @@ parser.add_argument('-data', action = 'store', dest = 'data',
                     help = 'Lista de Id dos datasets do OpenML. Pode ser um arquivo (Ex: dataset.csv) ou pode ser uma lista (Ex: 53,721...)')
 parser.add_argument('-output', action = 'store', dest = 'output', required = False,
                     default = 'output',help = 'Endereço de saida dos dados. Default = /output, nesse diretório serao salvos todos os arquivos gerados.')
-'''parser.add_argument('-key', action = 'store', dest = 'key', required = True,
-                    default = '0',help = 'API key do OpenML, é preciso para baixar os datasets e pode ser obtida ao se criar uma conta no OpenML')
-'''
+
 arguments = parser.parse_args()
 
-openml.config.apikey = 'a7e04810bd7a948128558f0520b356d0'
-#openml.config.apikey = arguments.key
 
 #Cria a pasta cache para salvar os dados do OpenML
 openml.config.cache_directory = os.path.expanduser(os.getcwd()+'/cache')

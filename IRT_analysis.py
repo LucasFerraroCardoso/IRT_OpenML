@@ -15,8 +15,15 @@ from catsim import plot
 global out
 out  = '/output'
 
-def plotAll(dict_tmp):
-    pass
+def plotAll(dict_tmp, save = False):
+    
+    parameters = ['Discriminacao','Dificuldade','Adivinhacao']
+    for dataset in list(dict_tmp.keys()):
+        for param in parameters:
+            plothist(dict_tmp,param,dataset,save = save)
+    
+    if save:
+        print('\nTodos os histogramas foram salvos \o/\n')
 
 def plothist(dict_tmp,parameter,dataset,bins = None,save = False,out = out):
     import math
