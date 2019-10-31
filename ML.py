@@ -36,6 +36,10 @@ def compare(original, res):
             tmp.append(0)
     return tmp
 
+def saveFile(lis,cols,path,name):
+    df_media = pd.DataFrame(lis, columns = cols)
+    df_media.to_csv(r''+path+name,index=0)
+
 parser = argparse.ArgumentParser(description = 'Ferramenta para analise de datasets do OpenML')
 
 parser.add_argument('-data', action = 'store', dest = 'data',
@@ -60,12 +64,14 @@ if not os.path.exists(out):
     os.mkdir(out)
     print("Diretorio " , out ,  " criado\n")
 
-
 listDid = []
-read = csv.reader( open(arguments.data, "r"))
-for row in read :
-    for i in row:
-        listDid.append(int(i))
+if 'csv' in arguments.data:
+    read = csv.reader( open(arguments.data, "r"))
+    for row in read :
+        for i in row:
+            listDid.append(int(i))
+else:
+    listDid = arguments.data.split(',')
 
 print('Id\'s dos datasets a serem baixados : ',listDid)
 print("Acessando o OpenML e baixando os datasets\n")
@@ -215,20 +221,23 @@ for dataset in datasetlist:
         os.mkdir('output/'+dataset.name)
         print("Diretorio " , dataset.name ,  " criado\n")
     
+    pathway = ''+os.getcwd()+'/'+out+'/'+dataset.name+'/'
     #Salvando itens usados para o teste
-    df = pd.DataFrame(list(zip(X_test,y_test_label)),columns = ['Item','Classe'])
-    df.to_csv(r''+os.getcwd()+'/'+out+'/'+dataset.name+'/'+dataset.name+'_test.csv',index=0)
-    
+    #df = pd.DataFrame(list(zip(X_test,y_test_label)),columns = ['Item','Classe'])
+    #df.to_csv(r''+os.getcwd()+'/'+out+'/'+dataset.name+'/'+dataset.name+'_test.csv',index=0)
+    saveFile(list(zip(X_test,y_test_label)),['Item','Classe'],pathway,dataset.name+'_test.csv')
     #Cria o arquivo contendo as repostas dos metodos de ML para gerar os parametros do IRT
-    df = pd.DataFrame(mlp_resp, columns = item_name)
-    df.to_csv(r''+os.getcwd()+'/'+out+'/'+dataset.name+'/'+dataset.name+'_irt.csv',index=0)
-    
+    #df = pd.DataFrame(mlp_resp, columns = item_name)
+    #df.to_csv(r''+os.getcwd()+'/'+out+'/'+dataset.name+'/'+dataset.name+'_irt.csv',index=0)
+    saveFile(mlp_resp,item_name,pathway,dataset.name+'_irt.csv')
     #Cria o aquivo contendo as repostas dos metodos de ML que serão avaliados
-    df = pd.DataFrame(lista_resp, columns = item_name)
-    df.to_csv(r''+os.getcwd()+'/'+out+'/'+dataset.name+'/'+dataset.name+'.csv',index=0)
+    #df = pd.DataFrame(lista_resp, columns = item_name)
+    #df.to_csv(r''+os.getcwd()+'/'+out+'/'+dataset.name+'/'+dataset.name+'.csv',index=0)
+    saveFile(lista_resp,item_name,pathway,dataset.name+'.csv')
     
     df = pd.DataFrame(mlp_score)
     df.to_csv(r''+os.getcwd()+'/'+out+'/'+dataset.name+'/'+dataset.name+'_mlp.csv',index=0)
+    saveFile(mlp_score,None,pathway,dataset.name+'_mlp.csv')
     
     list_algML = ['GaussianNB','BernoulliNB','KNeighborsClassifier(2)','KNeighborsClassifier(3)',
            'KNeighborsClassifier(5)','KNeighborsClassifier(8)','DecisionTreeClassifier()',
@@ -238,11 +247,13 @@ for dataset in datasetlist:
     
     
     #Salva o csv contendo a media dos metodos durante o k-fold
-    aux = list(zip(list_algML,lista_media))
-    df_media = pd.DataFrame(aux, columns = ['Metodo','Acuracia'])
-    df_media.to_csv(r''+os.getcwd()+'/'+out+'/'+dataset.name+'/'+dataset.name+'_acuracia.csv',index=0)
-    
+    #aux = list(zip(list_algML,lista_media))
+    #df_media = pd.DataFrame(aux, columns = ['Metodo','Acuracia'])
+    #df_media.to_csv(r''+os.getcwd()+'/'+out+'/'+dataset.name+'/'+dataset.name+'_acuracia.csv',index=0)
+    cols = ['Metodo','Acuracia']
+    saveFile(list(zip(list_algML,lista_media)),cols,pathway,dataset.name+'_acuracia.csv')
     #Salva o irt contendo a acuracia final
-    aux = list(zip(list_algML,resp_final))
-    df_media = pd.DataFrame(aux, columns = ['Metodo','Acuracia'])
-    df_media.to_csv(r''+os.getcwd()+'/'+out+'/'+dataset.name+'/'+dataset.name+'_final.csv',index=0)
+    #aux = list(zip(list_algML,resp_final))
+    #df_media = pd.DataFrame(aux, columns = ['Metodo','Acuracia'])
+    #df_media.to_csv(r''+os.getcwd()+'/'+out+'/'+dataset.name+'/'+dataset.name+'_final.csv',index=0)
+    saveFile(list(zip(list_algML,resp_final)),cols,pathway,dataset.name+'_final.csv')

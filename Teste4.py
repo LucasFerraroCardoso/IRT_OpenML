@@ -12,6 +12,8 @@ from catsim.irt import icc
 from catsim.estimation import HillClimbingEstimator
 from catsim import plot
 
+def plotAll(dict_tmp)
+
 def plothist(dict_tmp,parameter,dataset,bins = None):
     import math
     from matplotlib import pyplot as plt
