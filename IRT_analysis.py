@@ -38,7 +38,7 @@ def plothist(dict_tmp,parameter,dataset,bins = None,save = False,out = out):
     plt.xlim([min(lista), max(lista)])
     
     plt.hist(lista, bins=bins, alpha=0.75)
-    plt.title(dataset+'- Histograma - '+parameter)
+    plt.title(dataset+' - Histograma - '+parameter)
     plt.xlabel(parameter)
     plt.ylabel('Frequencia')
     
