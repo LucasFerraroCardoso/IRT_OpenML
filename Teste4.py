@@ -12,6 +12,25 @@ from catsim.irt import icc
 from catsim.estimation import HillClimbingEstimator
 from catsim import plot
 
+def plothist(dict_tmp,parameter,dataset,bins = None):
+    import math
+    from matplotlib import pyplot as plt
+    
+    lista = [i[1] for i in dict_tmp[dataset][parameter]]
+    
+    if bins == None:
+        bins = round(1 +3.322*math.log10(len(lista)))#Regra de Sturge
+    #bins = np.linspace(math.ceil(min(lista)),math.floor(max(lista)),bins)
+    #print(bins)
+    plt.xlim([min(lista), max(lista)])
+    
+    plt.hist(lista, bins=bins, alpha=0.75)
+    plt.title(dataset+'- Histograma - '+parameter)
+    plt.xlabel(parameter)
+    plt.ylabel('Frequencia')
+    
+    plt.show()
+
 def freqParam(irt_dict_tmp):
     tmp_dict = copy.deepcopy(irt_dict_tmp)
     for key in list(irt_dict_tmp.keys()):
@@ -43,7 +62,6 @@ def verificaParametros(irt_dict):
         d['Discriminacao'] = list(zip(tam,irt_dict[key][:,0]))
         d['Dificuldade'] = list(zip(tam,irt_dict[key][:,1]))
         d['Adivinhacao']= list(zip(tam,irt_dict[key][:,2]))
-        
         
         parameters_dict[key] = d
     
