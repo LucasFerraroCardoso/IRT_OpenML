@@ -12,9 +12,13 @@ from catsim.irt import icc
 from catsim.estimation import HillClimbingEstimator
 from catsim import plot
 
-def plotAll(dict_tmp)
+global out
+out  = '/output'
 
-def plothist(dict_tmp,parameter,dataset,bins = None):
+def plotAll(dict_tmp):
+    pass
+
+def plothist(dict_tmp,parameter,dataset,bins = None,save = False,out = out):
     import math
     from matplotlib import pyplot as plt
     
@@ -30,6 +34,9 @@ def plothist(dict_tmp,parameter,dataset,bins = None):
     plt.title(dataset+'- Histograma - '+parameter)
     plt.xlabel(parameter)
     plt.ylabel('Frequencia')
+    
+    if save:
+        plt.savefig(os.getcwd()+out+'/'+dataset+'/'+parameter+'_hist.png',dpi=200)
     
     plt.show()
 
@@ -95,8 +102,7 @@ def printFreq(tmp_dict):
 
 #Proficiencia inicial de cada metodo
 #list_theta = pd.read_csv('heart-statlog_acuracia.csv',index_col=0)
-
-out = '/output'
+        
 #Lista todos os diretorios de datasets da pasta output
 list_dir = os.listdir(os.getcwd()+out)
 
