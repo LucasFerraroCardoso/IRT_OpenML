@@ -40,7 +40,7 @@ def saveFile(lis,cols,path,name):
     df_media = pd.DataFrame(lis, columns = cols)
     df_media.to_csv(r''+path+name,index=0)
 
-parser = argparse.ArgumentParser(description = 'Ferramenta para analise de datasets do OpenML')
+parser = argparse.ArgumentParser(description = 'Ferramenta para baixar datasets do OpenML e gerar as respostas via AM')
 
 parser.add_argument('-data', action = 'store', dest = 'data',
                     default = 'datasets.csv', required = False,
@@ -93,7 +93,7 @@ for dataset in datasetlist:
                                                     test_size=0.3)
 
     #Quantidade de folds para treino
-    cv = KFold(n_splits=10, random_state=42, shuffle=False)
+    cv = KFold(n_splits=5, random_state=42, shuffle=False)
     
     #Listas de media de treinamento, acuracia final e vetor com as respostas
     mlp_media =[]
@@ -175,7 +175,6 @@ for dataset in datasetlist:
         mlp_resp.append(comparation)
         
     
-    
     #Adcionando os classificadores artificiais
     #Classificador aleatorio
     rand1 = [random.randint(0,1) for i in range(len(y_test_label))]
@@ -219,16 +218,10 @@ for dataset in datasetlist:
     
     pathway = ''+os.getcwd()+'/'+out+'/'+dataset.name+'/'
     #Salvando itens usados para o teste
-    #df = pd.DataFrame(list(zip(X_test,y_test_label)),columns = ['Item','Classe'])
-    #df.to_csv(r''+os.getcwd()+'/'+out+'/'+dataset.name+'/'+dataset.name+'_test.csv',index=0)
     saveFile(list(zip(X_test,y_test_label)),['Item','Classe'],pathway,dataset.name+'_test.csv')
     #Cria o arquivo contendo as repostas dos metodos de ML para gerar os parametros do IRT
-    #df = pd.DataFrame(mlp_resp, columns = item_name)
-    #df.to_csv(r''+os.getcwd()+'/'+out+'/'+dataset.name+'/'+dataset.name+'_irt.csv',index=0)
     saveFile(mlp_resp,item_name,pathway,dataset.name+'_irt.csv')
     #Cria o aquivo contendo as repostas dos metodos de ML que serão avaliados
-    #df = pd.DataFrame(lista_resp, columns = item_name)
-    #df.to_csv(r''+os.getcwd()+'/'+out+'/'+dataset.name+'/'+dataset.name+'.csv',index=0)
     saveFile(lista_resp,item_name,pathway,dataset.name+'.csv')
     
     df = pd.DataFrame(mlp_score)
@@ -243,13 +236,7 @@ for dataset in datasetlist:
     
     
     #Salva o csv contendo a media dos metodos durante o k-fold
-    #aux = list(zip(list_algML,lista_media))
-    #df_media = pd.DataFrame(aux, columns = ['Metodo','Acuracia'])
-    #df_media.to_csv(r''+os.getcwd()+'/'+out+'/'+dataset.name+'/'+dataset.name+'_acuracia.csv',index=0)
     cols = ['Metodo','Acuracia']
     saveFile(list(zip(list_algML,lista_media)),cols,pathway,dataset.name+'_acuracia.csv')
     #Salva o irt contendo a acuracia final
-    #aux = list(zip(list_algML,resp_final))
-    #df_media = pd.DataFrame(aux, columns = ['Metodo','Acuracia'])
-    #df_media.to_csv(r''+os.getcwd()+'/'+out+'/'+dataset.name+'/'+dataset.name+'_final.csv',index=0)
     saveFile(list(zip(list_algML,resp_final)),cols,pathway,dataset.name+'_final.csv')

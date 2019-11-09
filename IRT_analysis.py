@@ -5,28 +5,62 @@ Created on Sun Oct 27 13:43:16 2019
 @author: Lucas
 """
 import os
+import argparse
 import pandas as pd
 import numpy as np
 import copy
-from catsim.irt import icc
+import math
+from catsim.irt import icc_hpc
 from catsim.estimation import HillClimbingEstimator
-from catsim import plot
+#from catsim import plot
+
+parser = argparse.ArgumentParser(description = 'Ferramenta para analise dos datasets via TRI')
+
+parser.add_argument('-dir', action = 'store', dest = 'dir',
+                    default = 'output', required = False,
+                    help = 'Nome do diretório onde estão as pastas dos datasets (Ex: output)')
+parser.add_argument('-limit_dif', action = 'store', dest = 'limit_dif', required = False, type=float,
+                    default = 1,help = 'Valor minimo para um item ser dificil (Ex: 1)')
+parser.add_argument('-limit_dis', action = 'store', dest = 'limit_dis', required = False, type=float,
+                    default = 0.75,help = 'Valor minimo para um item ser discriminativo (Ex: 0.75)')
+parser.add_argument('-limit_adv', action = 'store', dest = 'limit_adv', required = False, type=float,
+                    default = 0.2,help = 'Valor minimo para um item ser de facil adivinhacao (Ex: 0.2)')
+parser.add_argument('-plotDataHist', action = 'store', dest = 'plotDataHist', required = False, 
+                    help = 'Plota o histograma de um parametro de um dataset (Ex: nome_dataset Dificuldade)')
+parser.add_argument('-plotAllHist', action = 'store_true', dest = 'plotAllHist', required = False,
+                    default = False, help = 'Plota todos os histogramas de cada dataset')
+parser.add_argument('-bins', action = 'store', dest = 'bins', required = False, type=int,
+                    help = 'Define o numero de bins do(s) histograma(s) gerados (Ex: 10)')
+parser.add_argument('-plotDataCCC', action = 'store', dest = 'plotDataCCC', required = False, 
+                    help = 'Plota as CCCs de um parametro de um dataset (Ex: nome_dataset Dificuldade)')
+parser.add_argument('-plotAllCCC', action = 'store_true', dest = 'plotAllCCC', required = False,
+                    default = False, help = 'Plota todos as CCCs de cada dataset')
+parser.add_argument('-save', action = 'store_true', dest = 'save', required = False,
+                    default = False, help = 'Salva os graficos mostrados na tela')
+
+arguments = parser.parse_args()
+
 
 global out
-out  = '/output'
+global limit_dif
+global limit_dis
+global limit_adv
+out  = '/'+arguments.dir
+limit_dif = arguments.limit_dif
+limit_dis = arguments.limit_dis
+limit_adv = arguments.limit_adv
 
-def plotAll(dict_tmp, save = False):
+def plotAll(dict_tmp, bins = None, save = False):
     
     parameters = ['Discriminacao','Dificuldade','Adivinhacao']
     for dataset in list(dict_tmp.keys()):
         for param in parameters:
-            plothist(dict_tmp,param,dataset,save = save)
+            plothist(dict_tmp,param,dataset,bins = bins,save = save)
     
     if save:
         print('\nTodos os histogramas foram salvos \o/\n')
 
 def plothist(dict_tmp,parameter,dataset,bins = None,save = False,out = out):
-    import math
     from matplotlib import pyplot as plt
     
     lista = [i[1] for i in dict_tmp[dataset][parameter]]
@@ -54,13 +88,13 @@ def freqParam(irt_dict_tmp):
         countdif = 0
         countges = 0
         for i in irt_dict_tmp[key]['Discriminacao']:
-            if i[1] >= 3:
+            if i[1] > limit_dis:
                 countdis += 1
         for i in irt_dict_tmp[key]['Dificuldade']:
-            if i[1] >= 1:
+            if i[1] > limit_dif:
                 countdif += 1
         for i in irt_dict_tmp[key]['Adivinhacao']:
-            if i[1] > 0.2:
+            if i[1] > limit_adv:
                 countges += 1
         tmp_dict[key]['Discriminacao'] = countdis/len(irt_dict_tmp[key]['Discriminacao'])
         tmp_dict[key]['Dificuldade'] = countdif/len(irt_dict_tmp[key]['Dificuldade'])
@@ -107,18 +141,121 @@ def printFreq(tmp_dict):
             print('{:20} {:10.0%}'.format(p[0],p[1]))
         print('-'*60)
 
-#Proficiencia inicial de cada metodo
-#list_theta = pd.read_csv('heart-statlog_acuracia.csv',index_col=0)
+def thetaAllClfEstimate(dict_tmp, irt_dict, irt_resp_dict, list_theta):
+    dict_theta = {}
+    for parameter in ['Dificuldade','Discriminacao']:
+        for dataset in list(dict_tmp.keys()):
+            dict_theta[dataset] = thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,
+                                                  dataset,parameter,list_theta)
         
+    return dict_theta
+
+def thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_theta):
+    #dict_theta = {}
+    list_new_theta = []
+    names = str(list_theta[dataset].keys).split()[6:]
+    names = [names[i] for i in range(0,len(names),2)]
+    tmp = {}
+    for t in range(len(names)):
+        
+        itens = []
+        item_resp = []
+        if parameter == 'Dificuldade':
+            #Separa as instâncias com discriminacao maior que zero
+            dis = [i for i in list(dict_tmp[dataset]['Discriminacao']) if i[1] > 0]
+            itens = [i[0]-1 for i in dis]
+            #Cria o vetor booleano de respostas
+            item_resp_tmp = [True if i == 1 else False for i in irt_resp_dict[dataset][t]]
+            item_resp = [item_resp_tmp[i] for i in itens]
+            
+        elif parameter == 'Discriminacao':
+            itens = [i for i in range(len(irt_dict[dataset]))]
+            item_resp = [True if i == 1 else False for i in irt_resp_dict[dataset][t]]
+            
+        else:
+            raise ValueError("Os parametros permetidos sao Dificuldade e Descriminacaos")
+        
+        #Calcula o novo theta com base na acuracia de cada classificador
+        new_theta = HillClimbingEstimator().estimate(items=irt_dict[dataset], 
+                                         administered_items= itens, 
+                                         response_vector=item_resp, 
+                                         est_theta=list_theta[dataset].to_numpy()[t][0])
+        
+        list_new_theta.append(new_theta)
+        
+        tmp[names[t]] = new_theta
+    
+    return tmp
+        #dict_theta[dataset] = tmp
+        
+def CalcICC(dict_theta,irt_dict):
+    icc_dict = {}
+    for dataset in list(dict_theta.keys()):
+        tmp = {}
+        for clf in list(dict_theta[dataset].keys()):
+            tmp[clf] = list(icc_hpc(dict_theta[dataset][clf],irt_dict[dataset]))
+        icc_dict[dataset] = tmp
+        
+    return icc_dict
+  
+def plotAllCCC(icc_dict,dict_tmp,save = False):
+    for parameter in ['Discriminacao','Dificuldade']:
+        for dataset in list(dict_tmp.keys()):
+            plotCCC(icc_dict,dict_tmp,dataset,parameter,save = save)
+            
+    if save:
+        print('\nTodos os histogramas foram salvos \o/\n')
+
+def plotCCC(icc_dict,dict_tmp,dataset,parameter,save = False,out = out): 
+    from matplotlib import pyplot as plt
+    
+    listap = []
+    if parameter == 'Dificuldade':
+        dis = [i for i in list(dict_tmp[dataset]['Discriminacao']) if i[1] > 0]
+        itens = [i[0]-1 for i in dis]
+        dif_ord = sorted(list(dict_tmp[dataset][parameter]), key=lambda tup: tup[1])
+        listap = [i for i in dif_ord if i[0]-1 in itens]
+        
+    elif parameter == 'Discriminacao':
+        listap = sorted(list(dict_tmp[dataset]['Discriminacao']), key=lambda tup: tup[1])
+        
+    else:
+        raise ValueError("Os parametros permetidos sao Dificuldade e Descriminacaos")
+        
+    list_index = [i[0]-1 for i in listap]
+    tmp = {}
+    clfs = list(icc_dict[dataset].keys())
+    for clf in clfs:
+        lista = []
+        for i in list_index:
+            lista.append(list(icc_dict[dataset][clf])[i])
+        tmp[clf] = lista
+    #dif_dict = tmp
+    x = [i[1] for i in listap]
+    plt.figure()
+    plt.title(dataset)
+    plt.xlabel(parameter)
+    plt.ylabel('P(\u03B8)')
+    clfs = ['GaussianNB', 'BernoulliNB','KNeighborsClassifier(8)', 'DecisionTreeClassifier()', 'RandomForestClassifier', 'SVC', 'MLPClassifier', 'rand1']
+    for clf in clfs[:12]:
+        plt.plot(x, list(tmp[clf]), label=clf)
+    plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    
+    if save:
+        plt.savefig(os.getcwd()+out+'/'+dataset+'/'+parameter+'_hist.png',dpi=200)
+    plt.show()
+
+#Proficiencia inicial de cada metodo
+list_theta = {}      
 #Lista todos os diretorios de datasets da pasta output
 list_dir = os.listdir(os.getcwd()+out)
-
-
 #Pega todos os arquivos contendo os valores para o IRT
 irt_dict = {}
 irt_resp_dict = {}
 for path in list_dir:
     
+    theta = pd.read_csv(os.getcwd()+out+'/'+path+'/'+path+'_final.csv',index_col=0)
+    list_theta[path] = theta
     irt_parameters = pd.read_csv(os.getcwd()+out+'/'+path+'/irt_item_param.csv',index_col=0).to_numpy()
     res_vector = pd.read_csv(os.getcwd()+out+'/'+path+'/'+path+'.csv').to_numpy()
     col = np.ones((len(irt_parameters), 1))    
@@ -127,31 +264,39 @@ for path in list_dir:
     irt_resp_dict[path] = res_vector
 
 dict_tmp = verificaParametros(irt_dict)
-tmp = freqParam(dict_tmp)
-printFreq(tmp)
-'''
-list_new_theta = []
-names = str(list_theta.keys).split()[6:]
-names = [names[i] for i in range(0,len(names),2)]
-for t in range(len(list_theta)):
+tmp_freq = freqParam(dict_tmp)
+printFreq(tmp_freq)
 
-    itens = [i for i in range(len(irt_parameters))]
-    item_resp = [True if i == 1 else False for i in res_vector[t]]
-    new_theta = HillClimbingEstimator().estimate(items=new_irt, 
-                                     administered_items= itens, 
-                                     response_vector=item_resp, 
-                                     est_theta=list_theta.to_numpy()[t][0])
-    print('Classificador: ',names[t])
-    print('Proficiencia estimada:', new_theta)
-    print('-'*50)
-    list_new_theta.append(new_theta)
-
+if arguments.plotDataHist != None:
+    dataset,parameter = arguments.plotDataHis.split()
+    plothist(dict_tmp,parameter,dataset,bins = arguments.bins,save = arguments.save)
+    
+if arguments.plotAllHist:
+    plotAll(dict_tmp, bins = arguments.bins, save = arguments.save)
+    
+if arguments.plotDataCCC != None:
+    dataset,parameter = arguments.plotDataCCC.split()
+    dict_theta = {}
+    dict_theta[dataset] = thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_theta)
+    icc_dict = CalcICC(dict_theta,irt_dict)
+    plotCCC(icc_dict,dict_tmp,dataset,parameter,save = arguments.save)
+    
+if arguments.plotAllCCC:
+    dict_theta = thetaAllClfEstimate(dict_tmp,irt_dict,irt_resp_dict,list_theta)
+    icc_dict = CalcICC(dict_theta,irt_dict)
+    plotAllCCC(icc_dict,dict_tmp,save = arguments.save)
+    
+''' 
+for p in names:
+    print(dict_theta['chatfield_4'][p]) 
+    print(icc(dict_theta['chatfield_4'][p],129.207,-0.692,0,1))
+    print('-------------------------')
 
 #(theta,discriminacao,dificuldade,guessing,assinstota)
 for i in range(len(list_new_theta)):
     theta = icc(list_new_theta[i],new_irt[0][0],new_irt[0][1],new_irt[0][2],new_irt[0][3])
-    print(theta)
-    '''
+    print(theta)'''
+    
 #plot.item_curve(new_irt[0][0],new_irt[0][1],new_irt[0][2],new_irt[0][3],title= 'Teste',
 #    ptype='both',
 #    max_info=True,

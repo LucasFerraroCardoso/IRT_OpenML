@@ -6,6 +6,7 @@ Created on Sat Oct 26 18:20:49 2019
 """
 
 import os
+import argparse
 import pandas as pd
 import rpy2.robjects.packages as rpackages
 import rpy2.robjects as robjects
@@ -46,7 +47,17 @@ def insertMongo(dici,mongoClient,namedata):
 #                tmp[key] = value
     db.inventory.insert_one(tmp)
 
-mongoClient = "mongodb+srv://Lucas:luigiferraro@openml-d6ap5.mongodb.net/test?retryWrites=true&w=majority"
+parser = argparse.ArgumentParser(description = 'Ferramenta para gerar os parâmetros do TRI')
+
+parser.add_argument('-dir', action = 'store', dest = 'dir',
+                    default = 'output', required = False,
+                    help = 'Nome do diretório onde estão as pastas dos datasets (Ex: output)')
+parser.add_argument('-url', action = 'store', dest = 'url', required = False,
+                    help = 'URL do cluster no MongoDB, com usuario e senha (Ex: mongodb+srv://Usuario:senha@nomedocluster)')
+
+arguments = parser.parse_args()
+
+#mongoClient = arguments.url
 
 #Importa o pacote utils do R para instalar e importar pacotes R
 utils = rpackages.importr('utils')
@@ -59,6 +70,7 @@ packnames = ('ltm','psych')
 #Verifica se o pacote ja esta instalado, caso não, instala
 names_to_install = [x for x in packnames if not rpackages.isinstalled(x)]
 if len(names_to_install) > 0:
+    print('Instalando o pacote ltm do R\n')
     utils.install_packages(StrVector(names_to_install))
 
 #Importa o pacore ltm do R
@@ -66,7 +78,7 @@ ltm = rpackages.importr('ltm')
 pandas2ri.activate()
 
 
-out = '/output'
+out = '/'+arguments.dir
 #Lista todos os diretorios de datasets da pasta output
 list_dir = os.listdir(os.getcwd()+out)
 
@@ -89,7 +101,7 @@ for f in range(len(list_data_irt)):
     #Calcula os parametros do IRT com o pacote ltm do R
     file = os.getcwd()+'/'+out+'/'+list_dir[f]+'/'+list_data_irt[f]
     file = file.replace('\\','/')
-    data = robjects.r('PL3.rasch<-tpm(read.csv(file="'+file+'"))')
+    data = robjects.r('tpm(read.csv(file="'+file+'"))')
     
     #Trata os dados dos parametros
     par = (str(data).split('\n'))
@@ -118,8 +130,9 @@ for f in range(len(list_data_irt)):
     dataframe.transpose().to_csv(r''+os.getcwd()+out+'/'+list_dir[f]+'/irt_item_param.csv')
     
     #Insere os dados do IRT no MongoDB
-    try:
-        insertMongo(parameter_dict,mongoClient,list_dir[f])
-        print('==> Dados salvos com sucesso :)\n')
-    except:
-        print("Não foi possivel inserir os dados no MongoDB :/ \nVerifique se a url passada do banco está correta, assim como nome e senha\n")
+    if arguments.url != None:
+        try:
+            insertMongo(parameter_dict,arguments.url,list_dir[f])
+            print('==> Dados salvos com sucesso :)\n')
+        except:
+            print("Não foi possivel inserir os dados no MongoDB :/ \nVerifique se a url passada do banco está correta, assim como nome e senha\n")
