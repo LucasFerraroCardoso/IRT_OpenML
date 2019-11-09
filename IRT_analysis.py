@@ -242,7 +242,7 @@ def plotCCC(icc_dict,dict_tmp,dataset,parameter,save = False,out = out):
     plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
     
     if save:
-        plt.savefig(os.getcwd()+out+'/'+dataset+'/'+parameter+'_CCC.png',dpi=200)
+        plt.savefig(os.getcwd()+out+'/'+dataset+'/'+parameter+'_CCC.png',dpi=200, bbox_inches='tight')
     plt.show()
 
 #Proficiencia inicial de cada metodo
