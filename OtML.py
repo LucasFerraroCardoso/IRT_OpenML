@@ -46,7 +46,7 @@ parser.add_argument('-data', action = 'store', dest = 'data',
                     default = 'datasets.csv', required = False,
                     help = 'Lista de Id dos datasets do OpenML. Pode ser um arquivo (Ex: dataset.csv) ou pode ser uma lista (Ex: 53,721...)')
 parser.add_argument('-output', action = 'store', dest = 'output', required = False,
-                    default = 'output',help = 'Endereço de saida dos dados. Default = /output, nesse diretório serao salvos todos os arquivos gerados.')
+                    default = 'output',help = 'Endereço de saida dos dados. Default = output, nesse diretório serao salvos todos os arquivos gerados.')
 
 arguments = parser.parse_args()
 
