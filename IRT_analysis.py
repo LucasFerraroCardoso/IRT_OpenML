@@ -78,8 +78,8 @@ def plothist(dict_tmp,parameter,dataset,bins = None,save = False,out = out):
     
     if save:
         plt.savefig(os.getcwd()+out+'/'+dataset+'/'+parameter+'_hist.png',dpi=200)
-    
-    plt.show()
+    else:
+        plt.show()
 
 def freqParam(irt_dict_tmp):
     tmp_dict = copy.deepcopy(irt_dict_tmp)
@@ -243,7 +243,8 @@ def plotCCC(icc_dict,dict_tmp,dataset,parameter,save = False,out = out):
     
     if save:
         plt.savefig(os.getcwd()+out+'/'+dataset+'/'+parameter+'_CCC.png',dpi=200, bbox_inches='tight')
-    plt.show()
+    else:
+        plt.show()
 
 #Proficiencia inicial de cada metodo
 list_theta = {}      
