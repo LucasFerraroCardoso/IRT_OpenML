@@ -26,13 +26,13 @@ parser.add_argument('-limit_dis', action = 'store', dest = 'limit_dis', required
 parser.add_argument('-limit_adv', action = 'store', dest = 'limit_adv', required = False, type=float,
                     default = 0.2,help = 'Valor minimo para um item ser de facil adivinhacao (Ex: 0.2)')
 parser.add_argument('-plotDataHist', action = 'store', dest = 'plotDataHist', required = False, 
-                    help = 'Plota o histograma de um parametro de um dataset (Ex: nome_dataset Dificuldade)')
+                    help = 'Plota o histograma de um parametro de um dataset (Ex: nome_dataset,Dificuldade)')
 parser.add_argument('-plotAllHist', action = 'store_true', dest = 'plotAllHist', required = False,
                     default = False, help = 'Plota todos os histogramas de cada dataset')
 parser.add_argument('-bins', action = 'store', dest = 'bins', required = False, type=int,
                     help = 'Define o numero de bins do(s) histograma(s) gerados (Ex: 10)')
 parser.add_argument('-plotDataCCC', action = 'store', dest = 'plotDataCCC', required = False, 
-                    help = 'Plota as CCCs de um parametro de um dataset (Ex: nome_dataset Dificuldade)')
+                    help = 'Plota as CCCs de um parametro de um dataset (Ex: nome_dataset,Dificuldade)')
 parser.add_argument('-plotAllCCC', action = 'store_true', dest = 'plotAllCCC', required = False,
                     default = False, help = 'Plota todos as CCCs de cada dataset')
 parser.add_argument('-save', action = 'store_true', dest = 'save', required = False,
@@ -268,14 +268,14 @@ tmp_freq = freqParam(dict_tmp)
 printFreq(tmp_freq)
 
 if arguments.plotDataHist != None:
-    dataset,parameter = arguments.plotDataHis.split()
+    dataset,parameter = arguments.plotDataHis.split(',')
     plothist(dict_tmp,parameter,dataset,bins = arguments.bins,save = arguments.save)
     
 if arguments.plotAllHist:
     plotAll(dict_tmp, bins = arguments.bins, save = arguments.save)
     
 if arguments.plotDataCCC != None:
-    dataset,parameter = arguments.plotDataCCC.split()
+    dataset,parameter = arguments.plotDataCCC.split(',')
     dict_theta = {}
     dict_theta[dataset] = thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_theta)
     icc_dict = CalcICC(dict_theta,irt_dict)
