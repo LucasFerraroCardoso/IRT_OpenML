@@ -231,7 +231,7 @@ for dataset in datasetlist:
     list_algML = ['GaussianNB','BernoulliNB','KNeighborsClassifier(2)','KNeighborsClassifier(3)',
            'KNeighborsClassifier(5)','KNeighborsClassifier(8)','DecisionTreeClassifier()',
            'RandomForestClassifier(3_estimators)','RandomForestClassifier(5_estimators)',
-           'RandomForestClassifier','SVC','MLPClassifier','rand1','rand2','rand3','majoritario','minoritario',
+           'RandomForestClassifier','SVM','MLPClassifier','rand1','rand2','rand3','majoritario','minoritario',
            'pessimo','otimo']
     
     
