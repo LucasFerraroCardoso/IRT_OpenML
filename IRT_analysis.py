@@ -11,7 +11,7 @@ import numpy as np
 import copy
 import math
 from catsim.irt import icc_hpc
-from catsim.estimation import HillClimbingEstimator
+
 #from catsim import plot
 
 parser = argparse.ArgumentParser(description = 'Ferramenta para analise dos datasets via TRI')
@@ -78,8 +78,8 @@ def plothist(dict_tmp,parameter,dataset,bins = None,save = False,out = out):
     
     if save:
         plt.savefig(os.getcwd()+out+'/'+dataset+'/'+parameter+'_hist.png',dpi=200)
-    else:
-        plt.show()
+    
+    plt.show()
 
 def freqParam(irt_dict_tmp):
     tmp_dict = copy.deepcopy(irt_dict_tmp)
@@ -136,23 +136,14 @@ def printFreq(tmp_dict):
     name = ['Discriminacao','Dificuldade','Advinhacao']
     for i in range(len(name)):
         print('Porcentagem de itens com valores altos do parametro',name[i])
-        print('Dataset \t\t Percentual de itens\n')
+        print('Dataset \t\t\t\t Percentual de itens\n')
         for p in lista[i]:
-            print('{:20} {:10.0%}'.format(p[0],p[1]))
+            print('{:40} {:10.0%}'.format(p[0],p[1]))
         print('-'*60)
 
-def thetaAllClfEstimate(dict_tmp, irt_dict, irt_resp_dict, list_theta):
-    dict_theta = {}
-    for parameter in ['Dificuldade','Discriminacao']:
-        for dataset in list(dict_tmp.keys()):
-            dict_theta[dataset] = thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,
-                                                  dataset,parameter,list_theta)
-        
-    return dict_theta
-
 def thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_theta):
-    #dict_theta = {}
-    list_new_theta = []
+    from catsim.estimation import HillClimbingEstimator
+
     names = str(list_theta[dataset].keys).split()[6:]
     names = [names[i] for i in range(0,len(names),2)]
     tmp = {}
@@ -176,37 +167,48 @@ def thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_thet
             raise ValueError("Os parametros permetidos sao Dificuldade e Descriminacaos")
         
         #Calcula o novo theta com base na acuracia de cada classificador
-        new_theta = HillClimbingEstimator().estimate(items=irt_dict[dataset], 
-                                         administered_items= itens, 
-                                         response_vector=item_resp, 
-                                         est_theta=list_theta[dataset].to_numpy()[t][0])
+        items=irt_dict[dataset]
+        adm_items= itens
+        r_vector=item_resp
+        e_theta=list_theta[dataset].to_numpy()[t][0]
+        new_theta = HillClimbingEstimator().estimate(items=items, 
+                                         administered_items= adm_items, 
+                                         response_vector=r_vector, 
+                                         est_theta=e_theta)
         
-        list_new_theta.append(new_theta)
+        #list_new_theta.append(new_theta)
         
         tmp[names[t]] = new_theta
     
     return tmp
         #dict_theta[dataset] = tmp
+
+def thetaAllClfEstimate(dict_tmp, irt_dict, irt_resp_dict, list_theta):
+    dict_theta = {}
+    for dataset in list(dict_tmp.keys()):
+        p = {}
+        for parameter in ['Dificuldade','Discriminacao']:
+            p[parameter] = thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_theta)
+        dict_theta[dataset] = p
+        
+    return dict_theta
         
 def CalcICC(dict_theta,irt_dict):
     icc_dict = {}
     for dataset in list(dict_theta.keys()):
-        tmp = {}
-        for clf in list(dict_theta[dataset].keys()):
-            tmp[clf] = list(icc_hpc(dict_theta[dataset][clf],irt_dict[dataset]))
-        icc_dict[dataset] = tmp
+        p = {}
+        for parameter in list(dict_theta[dataset].keys()):
+            tmp = {}
+            for clf in list(dict_theta[dataset][parameter].keys()):
+                t = dict_theta[dataset][parameter][clf]
+                tmp[clf] = list(icc_hpc(t,irt_dict[dataset]))
+                p[parameter] = tmp
+                
+        icc_dict[dataset] = p
         
     return icc_dict
   
-def plotAllCCC(icc_dict,dict_tmp,save = False):
-    for parameter in ['Discriminacao','Dificuldade']:
-        for dataset in list(dict_tmp.keys()):
-            plotCCC(icc_dict,dict_tmp,dataset,parameter,save = save)
-            
-    if save:
-        print('\nTodos os histogramas foram salvos \o/\n')
-
-def plotCCC(icc_dict,dict_tmp,dataset,parameter,save = False,out = out): 
+def plotCCC(icc_dict,dict_tmp,dataset,parameter,save = False,out = out):
     from matplotlib import pyplot as plt
     
     listap = []
@@ -224,11 +226,11 @@ def plotCCC(icc_dict,dict_tmp,dataset,parameter,save = False,out = out):
         
     list_index = [i[0]-1 for i in listap]
     tmp = {}
-    clfs = list(icc_dict[dataset].keys())
+    clfs = list(icc_dict[dataset][parameter].keys())
     for clf in clfs:
         lista = []
         for i in list_index:
-            lista.append(list(icc_dict[dataset][clf])[i])
+            lista.append(list(icc_dict[dataset][parameter][clf])[i])
         tmp[clf] = lista
     #dif_dict = tmp
     x = [i[1] for i in listap]
@@ -243,8 +245,19 @@ def plotCCC(icc_dict,dict_tmp,dataset,parameter,save = False,out = out):
     
     if save:
         plt.savefig(os.getcwd()+out+'/'+dataset+'/'+parameter+'_CCC.png',dpi=200, bbox_inches='tight')
-    else:
-        plt.show()
+
+    plt.show()
+
+def plotAllCCC(icc_dict,dict_tmp,save = False):
+  
+    
+    for dataset in list(icc_dict.keys()):
+        for parameter in list(icc_dict[dataset].keys()):
+            plotCCC(icc_dict,dict_tmp,dataset,parameter,save = save)
+            
+    if save:
+        print('\nTodos as CCCs foram salvas \o/\n')
+
 
 #Proficiencia inicial de cada metodo
 list_theta = {}      
@@ -269,7 +282,7 @@ tmp_freq = freqParam(dict_tmp)
 printFreq(tmp_freq)
 
 if arguments.plotDataHist != None:
-    dataset,parameter = arguments.plotDataHis.split(',')
+    dataset,parameter = arguments.plotDataHist.split(',')
     plothist(dict_tmp,parameter,dataset,bins = arguments.bins,save = arguments.save)
     
 if arguments.plotAllHist:
@@ -278,7 +291,9 @@ if arguments.plotAllHist:
 if arguments.plotDataCCC != None:
     dataset,parameter = arguments.plotDataCCC.split(',')
     dict_theta = {}
-    dict_theta[dataset] = thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_theta)
+    p = {}
+    p[parameter] = thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_theta)
+    dict_theta[dataset] = p
     icc_dict = CalcICC(dict_theta,irt_dict)
     plotCCC(icc_dict,dict_tmp,dataset,parameter,save = arguments.save)
     
