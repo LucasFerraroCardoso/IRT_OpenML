@@ -86,6 +86,10 @@ for dataset in datasetlist:
     X, y, categorical_indicator, attribute_names = dataset.get_data(
         dataset_format='array',
         target=dataset.default_target_attribute)
+    
+    #Verifica se existe valores faltosos, se existir substitui por zero
+    if len(np.where(np.isnan(X))[0]) > 0:
+        X = np.nan_to_num(X)
 
     #Split estratificado
     X_train, X_test, y_train_label, y_test_label = train_test_split(X, y,
