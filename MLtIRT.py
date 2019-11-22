@@ -101,10 +101,10 @@ for f in range(len(list_data_irt)):
     #Calcula os parametros do IRT com o pacote ltm do R
     file = os.getcwd()+'/'+out+'/'+list_dir[f]+'/'+list_data_irt[f]
     file = file.replace('\\','/')
-    try:
-        data = robjects.r('tpm(read.csv(file="'+file+'"))')
-    except:
-        data = robjects.r('tpm(read.csv(file="'+file+'"),control = list(optimizer = "nlminb"))')
+    #try:
+    data = robjects.r('tpm(read.csv(file="'+file+'"),IRT.param = TRUE)')
+    #except:
+     #   data = robjects.r('tpm(read.csv(file="'+file+'"),control = list(optimizer = "nlminb"))')
         
     #Trata os dados dos parametros
     par = (str(data).split('\n'))

@@ -239,7 +239,7 @@ def plotCCC(icc_dict,dict_tmp,dataset,parameter,save = False,out = out):
     plt.title(dataset)
     plt.xlabel(parameter)
     plt.ylabel('P(\u03B8)')
-    clfs = ['GaussianNB', 'BernoulliNB','KNeighborsClassifier(8)', 'DecisionTreeClassifier()', 'RandomForestClassifier', 'SVM', 'MLPClassifier', 'rand1']
+    clfs = ['GaussianNB','KNeighborsClassifier(8)', 'DecisionTreeClassifier()', 'RandomForestClassifier', 'SVM', 'MLPClassifier', 'rand1']
     for clf in clfs[:12]:
         plt.plot(x, list(tmp[clf]), label=clf)
     plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
