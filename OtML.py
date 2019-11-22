@@ -6,6 +6,7 @@ Created on Sat Oct 26 08:56:33 2019
 """
 
 import openml
+import time
 import pandas as pd
 import csv
 import gc
@@ -78,9 +79,13 @@ for i in tqdm(range(len(listDid))):
     gc.collect()
 
 #dataset = openml.datasets.get_dataset(53)
+#Cria lista de tempos
+lista_tempo = []
 
 print("Executando os algoritmos de redes neurais para gerar os valores do IRT\n")
 for dataset in datasetlist:
+    inicio = time.time() #inicia a contagem do tempo de execução
+
     print("Dataset: '%s' \n" %(dataset.name))
 
     X, y, categorical_indicator, attribute_names = dataset.get_data(
@@ -244,3 +249,13 @@ for dataset in datasetlist:
     saveFile(list(zip(list_algML,lista_media)),cols,pathway,dataset.name+'_acuracia.csv')
     #Salva o irt contendo a acuracia final
     saveFile(list(zip(list_algML,resp_final)),cols,pathway,dataset.name+'_final.csv')
+    
+    
+    fim = time.time()
+    tempo = fim - inicio
+    lista_tempo.append(tempo)
+
+for i in range(len(datasetlist)):
+    print("Tempo de execucao do dataset ",datasetlist[i])
+    print("Tempo: ",lista_tempo[i])
+    print('-'*60)
