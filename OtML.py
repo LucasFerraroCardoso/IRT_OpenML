@@ -256,6 +256,6 @@ for dataset in datasetlist:
     lista_tempo.append(tempo)
 
 for i in range(len(datasetlist)):
-    print("Tempo de execucao do dataset ",datasetlist[i])
-    print("Tempo: ",lista_tempo[i])
+    print("Tempo de execucao do dataset:\n",datasetlist[i])
+    print("Tempo: ",lista_tempo[i]," em segundos")
     print('-'*60)
