@@ -164,8 +164,10 @@ def thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_thet
             itens = [i for i in range(len(irt_dict[dataset]))]
             item_resp = [True if i == 1 else False for i in irt_resp_dict[dataset][t]]
             
-        else:
-            raise ValueError("Os parametros permetidos sao Dificuldade e Descriminacaos")
+        elif parameter == 'Adivinhacao':
+            itens = [i for i in range(len(irt_dict[dataset]))]
+            item_resp = [True if i == 1 else False for i in irt_resp_dict[dataset][t]]
+            #raise ValueError("Os parametros permetidos sao Dificuldade e Descriminacaos")
         
         #Calcula o novo theta com base na acuracia de cada classificador
         items=irt_dict[dataset]
@@ -188,7 +190,7 @@ def thetaAllClfEstimate(dict_tmp, irt_dict, irt_resp_dict, list_theta):
     dict_theta = {}
     for dataset in list(dict_tmp.keys()):
         p = {}
-        for parameter in ['Dificuldade','Discriminacao']:
+        for parameter in ['Dificuldade','Discriminacao', 'Adivinhacao']:
             p[parameter] = thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_theta)
         dict_theta[dataset] = p
         
@@ -222,8 +224,9 @@ def plotCCC(icc_dict,dict_tmp,dataset,parameter,save = False,out = out):
     elif parameter == 'Discriminacao':
         listap = sorted(list(dict_tmp[dataset]['Discriminacao']), key=lambda tup: tup[1])
         
-    else:
-        raise ValueError("Os parametros permetidos sao Dificuldade e Descriminacaos")
+    elif parameter == 'Adivinhacao':
+        listap = sorted(list(dict_tmp[dataset]['Adivinhacao']), key=lambda tup: tup[1])
+        #raise ValueError("Os parametros permetidos sao Dificuldade e Descriminacaos")
         
     list_index = [i[0]-1 for i in listap]
     tmp = {}
