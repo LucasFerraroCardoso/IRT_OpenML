@@ -24,4 +24,4 @@ Once all the necessary packages are installed, we can move on to running the dec
 
 The decodIRT tool is made up of three scripts written in Python, made for sequential use. The image below shows how to use the scripts in sequence.
 
-![Fluxograma](https://github.com/LucasFerraroCardoso/IRT_OpenML/raw/master/Fluxograma.png "Fluxograma")
+<img src="https://github.com/LucasFerraroCardoso/IRT_OpenML/raw/master/Fluxograma.png" width="500">
