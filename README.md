@@ -25,3 +25,13 @@ Once all the necessary packages are installed, we can move on to running the dec
 The decodIRT tool is made up of three scripts written in Python, made for sequential use. The image below shows how to use the scripts in sequence.
 
 <img src="https://github.com/LucasFerraroCardoso/IRT_OpenML/raw/master/Fluxograma.png" width="500">
+
+## Tutorial
+
+Here is a brief tutorial on how to use decodIRT. For details of existing parameters and generated results, see the documentation files.
+
+This tutorial is divided into three parts that correspond to each of the scripts.
+
+### decodIRT_OtML
+
+Although the tool can analyze multiple datasets, in this tutorial only one will be used. The chosen dataset is Credit-g, which can be accessed at https://www.openml.org/d/31.
