@@ -63,3 +63,7 @@ The decodIRT_analysis script, as the name already suggests, aims to perform anal
 This command will generate all histograms, curve graphs and save them into the directory where the dataset was downloaded. If the -save parameter is not passed, all requested graphics will be shown on the run screen.
 
 There are more parameters that allow the user to control the value limit of each item parameter, the number of histogram bins and for which dataset and item parameter (Discrimination, Difficulty, Guessing) the graphs will be generated.
+
+## Author's Note
+
+I hope this tool can help you realize interesting insights and assist you in your research! ;)
