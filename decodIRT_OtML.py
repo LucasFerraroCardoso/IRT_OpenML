@@ -213,7 +213,7 @@ for dataset in datasetlist:
     for i in list_tmp:
         comparation = compare(y_test_label,i)
         lista_resp.append(comparation)
-        mlp_resp.append(comparation)
+        #mlp_resp.append(comparation)
         lista_media.append(accuracy_score(y_test_label, i))
         resp_final.append(accuracy_score(y_test_label, i))
     
