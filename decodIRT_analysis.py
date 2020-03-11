@@ -35,6 +35,10 @@ parser.add_argument('-plotDataCCC', action = 'store', dest = 'plotDataCCC', requ
                     help = 'Plota as CCCs de um parametro de um dataset (Ex: nome_dataset,Dificuldade)')
 parser.add_argument('-plotAllCCC', action = 'store_true', dest = 'plotAllCCC', required = False,
                     default = False, help = 'Plota todos as CCCs de cada dataset')
+parser.add_argument('-scoreData', action = 'store', dest = 'scoreData', required = False, 
+                    help = 'Calcula o score de todos os classificadores para um dataset (Ex: nome_dataset)')
+parser.add_argument('-scoreAll', action = 'store_true', dest = 'scoreAll', required = False,
+                    default = False, help = 'Calcula o score de todos os classificadores para todos os datasets')
 parser.add_argument('-save', action = 'store_true', dest = 'save', required = False,
                     default = False, help = 'Salva os graficos mostrados na tela')
 
@@ -49,6 +53,10 @@ out  = '/'+arguments.dir
 limit_dif = arguments.limit_dif
 limit_dis = arguments.limit_dis
 limit_adv = arguments.limit_adv
+
+def saveFile(lis,cols,path,name):
+    df_media = pd.DataFrame(lis, columns = cols)
+    df_media.to_csv(r''+path+name,index=0)
 
 def calcDif(dict_tmp,dataset):
     
@@ -176,10 +184,6 @@ def thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_thet
             
             ###############
             dif_ord,listap = calcDif(dict_tmp,dataset)
-            # dif_ord = sorted(list(dict_tmp[dataset][parameter]), key=lambda tup: tup[1])
-            # #print('dif_ord',dif_ord)
-            # listap = [i for i in dif_ord if i[0]-1 in itens]
-            # #print('listap',listap)
             itens = [i[0]-1 for i in listap]
             item_resp = [item_resp_tmp[i] for i in itens]
             
@@ -195,9 +199,7 @@ def thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_thet
         #print(itens)
         e_theta=list_theta[dataset].to_numpy()[t][0]
         qtd = len(itens)//10
-        #print(qtd)
-        #print(itens)
-        #a = input()
+       
         for i in range(10):
         #Calcula o novo theta com base na acuracia de cada classificador
             items=irt_dict[dataset]
@@ -251,26 +253,53 @@ def CalcICC(dict_theta,irt_dict):
         
     return icc_dict
 
-def calcPro(icc_dict,dict_tmp,dataset):
+def calcPro(icc_dict,dict_tmp,dataset,save = False):
     dif_ord,listap = calcDif(dict_tmp,dataset)
     itens = [i[0]-1 for i in listap]
-    score_total = {}
-    score_pos = {}
+    score_total = []
+    score_pos = []
     clfs = list(icc_dict[dataset]['Dificuldade'].keys())
     
     for clf in clfs:
-        #print(icc_dict[dataset]['Dificuldade'][clf])
-        score_total[clf] = sum(icc_dict[dataset]['Dificuldade'][clf])
-        lista = [i for i in icc_dict[dataset]['Dificuldade'][clf] if i in itens]
-        score_pos[clf] = sum(lista)
+        #score_total[clf] = sum(icc_dict[dataset]['Dificuldade'][clf])
+        score_total.append(sum(icc_dict[dataset]['Dificuldade'][clf]))
+        lista = [icc_dict[dataset]['Dificuldade'][clf][i] for i in itens]
+        #score_pos[clf] = sum(lista)
+        score_pos.append(sum(lista))
     
-    print('\nScores dos classificadore\n')
-    for i in clfs:
-        print('Score total do classificador ',i,': ',score_total[i])
-        print('\nScore com discriminacao positiva ',i,': ',score_pos[i])
+    l_score_total = list(zip(clfs,score_total))
+    l_score_pos = list(zip(clfs,score_pos))
+    
+    l_score_total.sort(key=lambda tup: tup[1])
+    l_score_pos.sort(key=lambda tup: tup[1])
+    #print(l_score_total)
+    
+    if save:
+        cols = ['Clf','Score']
+        saveFile(l_score_total,cols,os.getcwd()+out+'/'+dataset+'/','score_total.csv')
+        saveFile(l_score_pos,cols,os.getcwd()+out+'/'+dataset+'/','score_disPositivo.csv')
+    else:
+        print('\nScores dos classificadores para o dataset:',dataset,'\n')
+        print('Score total dos classificadores:\n')
+        for i in range(len(clfs)):
+            print('{:40} {:10}'.format(l_score_total[i][0],l_score_total[i][1]))
+        #print('-'*60)
+        
+        print('\nScore com discriminacao positiva:\n')
+        for i in range(len(clfs)):
+            print('{:40} {:10}'.format(l_score_pos[i][0],l_score_pos[i][1]))
         print('-'*60)
         
-    return score_total,score_pos
+    #return score_total,score_pos
+            
+def calcAllPro(icc_dict,dict_tmp,save = False):
+    datasets = list(icc_dict.keys())
+    
+    for dataset in datasets:
+         calcPro(icc_dict,dict_tmp,dataset,save = save)
+         
+    if save:
+        print('\nOs scores dos classificadores para todos os datasets foram salvos \o/\n')
     
 def plotCCC(icc_dict,dict_tmp,dataset,parameter,save = False,out = out):
     from matplotlib import pyplot as plt
@@ -369,10 +398,25 @@ if arguments.plotAllCCC:
     dict_theta = thetaAllClfEstimate(dict_tmp,irt_dict,irt_resp_dict,list_theta,save = arguments.save)
     icc_dict = CalcICC(dict_theta,irt_dict)
     plotAllCCC(icc_dict,dict_tmp,save = arguments.save)
+
+if arguments.scoreData != None:
+    dataset = arguments.scoreData
+    dict_theta = {}
+    p = {}
+    p['Dificuldade'] = thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,'Dificuldade',list_theta,save = arguments.save)
+    dict_theta[dataset] = p
+    icc_dict = CalcICC(dict_theta,irt_dict)
+    calcPro(icc_dict,dict_tmp,dataset,save = arguments.save)
     
-dict_theta = thetaAllClfEstimate(dict_tmp,irt_dict,irt_resp_dict,list_theta,save = False)
-icc_dict = CalcICC(dict_theta,irt_dict)
-score1,score2 = calcPro(icc_dict,dict_tmp,'credit-g')
+if arguments.scoreAll:
+    dict_theta = thetaAllClfEstimate(dict_tmp,irt_dict,irt_resp_dict,list_theta,save = arguments.save)
+    icc_dict = CalcICC(dict_theta,irt_dict)
+    calcAllPro(icc_dict,dict_tmp,save = arguments.save)
+    
+#dict_theta = thetaAllClfEstimate(dict_tmp,irt_dict,irt_resp_dict,list_theta,save = False)
+#icc_dict = CalcICC(dict_theta,irt_dict)
+#score1,score2 = calcPro(icc_dict,dict_tmp,'credit-g')
+#dif_ord,listap = calcDif(dict_tmp,'credit-g')
     
 ''' 
 for p in names:
