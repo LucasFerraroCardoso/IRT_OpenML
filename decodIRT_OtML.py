@@ -83,10 +83,10 @@ for i in tqdm(range(len(listDid))):
 lista_tempo = []
 
 print("Executando os algoritmos de redes neurais para gerar os valores do IRT\n")
-for dataset in listDid:
+for d in listDid:
     inicio = time.time() #inicia a contagem do tempo de execução
     
-    dataset = openml.datasets.get_dataset(i)
+    dataset = openml.datasets.get_dataset(d)
     print("Dataset: '%s' \n" %(dataset.name))
 
     X, y, categorical_indicator, attribute_names = dataset.get_data(
