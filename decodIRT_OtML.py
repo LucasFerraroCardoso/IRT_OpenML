@@ -22,7 +22,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import KFold
 import numpy as np
 import warnings
-import random
+from random import choice
 import argparse
 from sklearn.model_selection import train_test_split
 
@@ -74,8 +74,8 @@ print('Id\'s dos datasets a serem baixados : ',listDid)
 print("Acessando o OpenML e baixando os datasets\n")
 datasetlist = []
 for i in tqdm(range(len(listDid))):
-    dataset = openml.datasets.get_dataset(listDid[i])
-    datasetlist.append(dataset)
+    openml.datasets.get_dataset(listDid[i])
+    #datasetlist.append(dataset)
     gc.collect()
 
 #dataset = openml.datasets.get_dataset(53)
@@ -83,9 +83,10 @@ for i in tqdm(range(len(listDid))):
 lista_tempo = []
 
 print("Executando os algoritmos de redes neurais para gerar os valores do IRT\n")
-for dataset in datasetlist:
+for dataset in listDid:
     inicio = time.time() #inicia a contagem do tempo de execução
-
+    
+    dataset = openml.datasets.get_dataset(i)
     print("Dataset: '%s' \n" %(dataset.name))
 
     X, y, categorical_indicator, attribute_names = dataset.get_data(
@@ -95,11 +96,16 @@ for dataset in datasetlist:
     #Verifica se existe valores faltosos, se existir substitui por zero
     if len(np.where(np.isnan(X))[0]) > 0:
         X = np.nan_to_num(X)
-
+    
+    #Calcula split
+    split = 0.3
+    if 0.3*len(y) > 1000:
+        split = float('%g' % (1000/len(y)))
+    
     #Split estratificado
     X_train, X_test, y_train_label, y_test_label = train_test_split(X, y,
                                                     stratify=y, 
-                                                    test_size=0.3)
+                                                    test_size=split)
 
     #Quantidade de folds para treino
     cv = KFold(n_splits=5, random_state=42, shuffle=False)
@@ -185,25 +191,40 @@ for dataset in datasetlist:
         
     
     #Adcionando os classificadores artificiais
+    elementos = list(set(list(y)))
     #Classificador aleatorio
-    rand1 = [random.randint(0,1) for i in range(len(y_test_label))]
-    rand2 = [random.randint(0,1) for i in range(len(y_test_label))]
-    rand3 = [random.randint(0,1) for i in range(len(y_test_label))]
+    rand1 = [choice(elementos) for i in range(len(y_test_label))]    
+    rand2 = [choice(elementos) for i in range(len(y_test_label))]    
+    rand3 = [choice(elementos) for i in range(len(y_test_label))]
+    # rand1 = [random.randint(0,1) for i in range(len(y_test_label))]
+    # rand2 = [random.randint(0,1) for i in range(len(y_test_label))]
+    # rand3 = [random.randint(0,1) for i in range(len(y_test_label))]
     #rand4 = [random.randint(0,1) for i in range(len(y))]
     
     #Adcionando calssificador majoritario e minoritario
     major = []
     minor = []
-    if list(y).count(0) == dataset.qualities['MajorityClassSize']:
-        major = [0 for i in range(len(y_test_label))]
-        minor = [1 for i in range(len(y_test_label))]
-    else:
-        major = [1 for i in range(len(y_test_label))]
-        minor = [0 for i in range(len(y_test_label))]
+    for classe in elementos:
+        if list(y).count(classe) == dataset.qualities['MajorityClassSize']:
+            major = [classe for i in range(len(y_test_label))]
+        if list(y).count(classe) == dataset.qualities['MinorityClassSize']:
+            minor = [classe for i in range(len(y_test_label))]
+            
+    # if list(y).count(0) == dataset.qualities['MajorityClassSize']:
+    #     major = [0 for i in range(len(y_test_label))]
+    #     minor = [1 for i in range(len(y_test_label))]
+    # else:
+    #     major = [1 for i in range(len(y_test_label))]
+    #     minor = [0 for i in range(len(y_test_label))]
     
     #Adcionando calssificadores pessimos e otimos
     otimo = list(y_test_label)
-    pessimo = [0 if i == 1 else 1 for i in y_test_label]
+    #pessimo = [0 if i == 1 else 1 for i in y_test_label]
+    pessimo = []
+    for i in y_test_label:
+        e_tmp = elementos[:]
+        e_tmp.remove(i)
+        pessimo.append(choice(e_tmp))
     
     #Lista de classificadores artificiais
     list_tmp = [rand1,rand2,rand3,major,minor,pessimo,otimo]
@@ -255,7 +276,8 @@ for dataset in datasetlist:
     tempo = fim - inicio
     lista_tempo.append(tempo)
 
-for i in range(len(datasetlist)):
-    print("Tempo de execucao do dataset:\n",datasetlist[i])
+for i in range(len(listDid)):
+    dataset = openml.datasets.get_dataset(listDid[i])
+    print("Tempo de execucao do dataset:\n",dataset)
     print("Tempo: ",lista_tempo[i],"segundos")
     print('-'*60)
