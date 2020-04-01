@@ -99,8 +99,8 @@ for d in listDid:
     
     #Calcula split
     split = 0.3
-    if 0.3*len(y) > 1000:
-        split = float('%g' % (1000/len(y)))
+    if 0.3*len(y) > 500:
+        split = float('%g' % (500/len(y)))
     
     #Split estratificado
     X_train, X_test, y_train_label, y_test_label = train_test_split(X, y,
