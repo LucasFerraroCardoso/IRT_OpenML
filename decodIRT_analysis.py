@@ -183,20 +183,21 @@ def thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_thet
         itens = []
         item_resp = []
         if parameter == 'Dificuldade':
-            #Separa as instâncias com discriminacao maior que zero
-            dis = [i for i in list(dict_tmp[dataset]['Discriminacao']) if i[1] > 0]
-            #print('dis',dis)
-            itens = [i[0]-1 for i in dis]
-            #print('itens',itens)
-            #Cria o vetor booleano de respostas
-            item_resp_tmp = [True if i == 1 else False for i in irt_resp_dict[dataset][t]]
-            #print('item_resp_tmp',item_resp_tmp)
-            item_resp = [item_resp_tmp[i] for i in itens]
-            #print('item_resp',item_resp)
-            
-            ###############
+#            #Separa as instâncias com discriminacao maior que zero
+#            dis = [i for i in list(dict_tmp[dataset]['Discriminacao']) if i[1] > 0]
+#            
+#            itens = [i[0]-1 for i in dis]
+#            #Cria o vetor booleano de respostas
+#            item_resp_tmp = [True if i == 1 else False for i in irt_resp_dict[dataset][t]]
+#            item_resp = [item_resp_tmp[i] for i in itens]
+#            
+#            ###############
             dif_ord,listap = calcDif(dict_tmp,dataset)
-            itens = [i[0]-1 for i in listap]
+            #print(dif_ord)
+            itens = [i[0]-1 for i in dif_ord]
+#            item_resp = [item_resp_tmp[i] for i in itens]
+            #itens = [i for i in range(len(irt_dict[dataset]))]
+            item_resp_tmp = [True if i == 1 else False for i in irt_resp_dict[dataset][t]]
             item_resp = [item_resp_tmp[i] for i in itens]
             
         elif parameter == 'Discriminacao':
@@ -210,12 +211,16 @@ def thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_thet
         
         #print(itens)
         e_theta=list_theta[dataset].to_numpy()[t][0]
+        #print(e_theta)
         qtd = len(itens)//10
-       
+        #print('qtd ',qtd)
+        #print(itens)
+        #a = input('TEste')
         for i in range(10):
         #Calcula o novo theta com base na acuracia de cada classificador
             items=irt_dict[dataset]
             adm_items= itens[:qtd]
+            #print(items)
             itens = itens[qtd:]#Corte
             r_vector=item_resp[:qtd]
             item_resp = item_resp[qtd:]#Corte
@@ -229,7 +234,8 @@ def thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_thet
         #list_new_theta.append(new_theta)
         
         tmp[names[t]] = new_theta
-        
+        #print(names[t])
+   
     if save:
         df = pd.DataFrame(list(tmp.items()),index=tmp.keys(), columns=['Clf','Theta'])
         df.to_csv(os.getcwd()+out+'/'+dataset+'/'+'theta_list.csv',index=0)
@@ -237,11 +243,11 @@ def thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_thet
     return tmp
         #dict_theta[dataset] = tmp
 
-def thetaAllClfEstimate(dict_tmp, irt_dict, irt_resp_dict, list_theta, save = False):
+def thetaAllClfEstimate(dict_tmp, irt_dict, irt_resp_dict, list_theta, param = ['Dificuldade','Discriminacao', 'Adivinhacao'], save = False):
     dict_theta = {}
     for dataset in list(dict_tmp.keys()):
         p = {}
-        for parameter in ['Dificuldade','Discriminacao', 'Adivinhacao']:
+        for parameter in param:
             p[parameter] = thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_theta,save = save)
         dict_theta[dataset] = p
         
@@ -421,7 +427,7 @@ if arguments.scoreData != None:
     calcPro(icc_dict,dict_tmp,dataset,save = arguments.save)
     
 if arguments.scoreAll:
-    dict_theta = thetaAllClfEstimate(dict_tmp,irt_dict,irt_resp_dict,list_theta,save = arguments.save)
+    dict_theta = thetaAllClfEstimate(dict_tmp,irt_dict,irt_resp_dict,list_theta,param = ['Dificuldade'],save = arguments.save)
     icc_dict = CalcICC(dict_theta,irt_dict)
     calcAllPro(icc_dict,dict_tmp,save = arguments.save)
     
