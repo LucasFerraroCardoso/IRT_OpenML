@@ -135,7 +135,7 @@ def verificaParametros(irt_dict):
     
     return parameters_dict
 
-def printFreq(tmp_dict):
+def printFreq(tmp_dict, save = False):
     dis = []
     dif = []
     ges = []
@@ -152,12 +152,24 @@ def printFreq(tmp_dict):
     
     lista = [dis, dif, ges]
     name = ['Discriminacao','Dificuldade','Advinhacao']
-    for i in range(len(name)):
-        print('Porcentagem de itens com valores altos do parametro',name[i])
-        print('Dataset \t\t\t\t Percentual de itens\n')
-        for p in lista[i]:
-            print('{:40} {:10.0%}'.format(p[0],p[1]))
-        print('-'*60)
+    if save:
+        file = open(r''+os.getcwd()+'/'+'IRT_param_freq.txt','w')
+        for i in range(len(name)):
+            file.write('Porcentagem de itens com valores altos do parametro '+name[i]+'\n')
+            file.write('Dataset \t\t\t\t Percentual de itens\n')
+            for p in lista[i]:
+                file.write('{:40} {:10.0%}'.format(p[0],p[1])+'\n')
+            file.write('-'*60+'\n')
+        file.close() 
+        print("As frequencias dos parametros de item foram salvas \o/\n")
+    else:
+        for i in range(len(name)):
+            print('Porcentagem de itens com valores altos do parametro',name[i])
+            print('Dataset \t\t\t\t Percentual de itens\n')
+            for p in lista[i]:
+                print('{:40} {:10.0%}'.format(p[0],p[1]))
+            print('-'*60)
+        
 
 def thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_theta, bins = None,save = False, out = out):
     from catsim.estimation import HillClimbingEstimator
@@ -376,7 +388,7 @@ for path in list_dir:
 
 dict_tmp = verificaParametros(irt_dict)
 tmp_freq = freqParam(dict_tmp)
-printFreq(tmp_freq)
+printFreq(tmp_freq,save = arguments.save)
 
 if arguments.plotDataHist != None:
     dataset,parameter = arguments.plotDataHist.split(',')
