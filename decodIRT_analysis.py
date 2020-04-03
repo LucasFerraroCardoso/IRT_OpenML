@@ -292,22 +292,57 @@ def calcPro(icc_dict,dict_tmp,dataset,save = False):
     l_score_pos.sort(key=lambda tup: tup[1])
     #print(l_score_total)
     
+    import matplotlib.pyplot as plt
+    eager = ['otimo','SVM', 'MLPClassifier','DecisionTreeClassifier()','GaussianNB', 'BernoulliNB']
+    ensemble = ['RandomForestClassifier(3_estimators)', 'RandomForestClassifier(5_estimators)', 'RandomForestClassifier']
+    lazy = ['KNeighborsClassifier(2)', 'KNeighborsClassifier(3)', 'KNeighborsClassifier(5)', 'KNeighborsClassifier(8)','rand1', 'rand2', 'rand3', 'majoritario', 'minoritario', 'pessimo']
+    
+    key = [1,1,1]
+    for clfscore in l_score_total:    
+        if clfscore[0] in eager:
+            if key[0]:
+                key[0] = 0
+                plt.plot(clfscore[1], clfscore[0], 'ro',color='deepskyblue',label='eager')
+            else:
+                plt.plot(clfscore[1], clfscore[0], 'ro',color='deepskyblue')
+            #plt.legend(plt, ['eager'])
+        if clfscore[0] in ensemble:
+            if key[1]:
+                key[1] = 0
+                plt.plot(clfscore[1], clfscore[0], 'ro',color='gold',label='ensemble')
+            else:
+                plt.plot(clfscore[1], clfscore[0], 'ro',color='gold')
+        if clfscore[0] in lazy:
+            if key[2]:
+                key[2] = 0
+                plt.plot(clfscore[1], clfscore[0], 'ro',color='orangered',label='lazy')
+            else:
+                plt.plot(clfscore[1], clfscore[0], 'ro',color='orangered')
+    
+    plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.15),ncol=3, fancybox=True)
+    plt.grid(axis='y',linestyle='--')
+    plt.xlabel('score')
+    #plt.show()
+    
     if save:
         cols = ['Clf','Score']
         saveFile(l_score_total,cols,os.getcwd()+out+'/'+dataset+'/','score_total.csv')
         saveFile(l_score_pos,cols,os.getcwd()+out+'/'+dataset+'/','score_disPositivo.csv')
+        plt.savefig(os.getcwd()+out+'/'+dataset+'/'+dataset+'_score.png',dpi=200, bbox_inches='tight')
+        plt.close()
     else:
         print('\nScores dos classificadores para o dataset:',dataset,'\n')
         print('Score total dos classificadores:\n')
         for i in range(len(clfs)):
             print('{:40} {:10}'.format(l_score_total[i][0],l_score_total[i][1]))
         #print('-'*60)
-        
+        plt.savefig(os.getcwd()+out+'/'+dataset+'/'+parameter+'_CCC.png',dpi=200, bbox_inches='tight')
+        plt.close()
         print('\nScore com discriminacao positiva:\n')
         for i in range(len(clfs)):
             print('{:40} {:10}'.format(l_score_pos[i][0],l_score_pos[i][1]))
         print('-'*60)
-        
+        plt.show()
     #return score_total,score_pos
             
 def calcAllPro(icc_dict,dict_tmp,save = False):
