@@ -35,6 +35,10 @@ parser.add_argument('-plotDataCCC', action = 'store', dest = 'plotDataCCC', requ
                     help = 'Plota as CCCs de um parametro de um dataset (Ex: nome_dataset,Dificuldade)')
 parser.add_argument('-plotAllCCC', action = 'store_true', dest = 'plotAllCCC', required = False,
                     default = False, help = 'Plota todos as CCCs de cada dataset')
+parser.add_argument('-scoreData', action = 'store', dest = 'scoreData', required = False, 
+                    help = 'Calcula o score de todos os classificadores para um dataset (Ex: nome_dataset)')
+parser.add_argument('-scoreAll', action = 'store_true', dest = 'scoreAll', required = False,
+                    default = False, help = 'Calcula o score de todos os classificadores para todos os datasets')
 parser.add_argument('-save', action = 'store_true', dest = 'save', required = False,
                     default = False, help = 'Salva os graficos mostrados na tela')
 
@@ -49,6 +53,19 @@ out  = '/'+arguments.dir
 limit_dif = arguments.limit_dif
 limit_dis = arguments.limit_dis
 limit_adv = arguments.limit_adv
+
+def saveFile(lis,cols,path,name):
+    df_media = pd.DataFrame(lis, columns = cols)
+    df_media.to_csv(r''+path+name,index=0)
+
+def calcDif(dict_tmp,dataset):
+    
+    dis = [i for i in list(dict_tmp[dataset]['Discriminacao']) if i[1] > 0]
+    itens = [i[0]-1 for i in dis]
+    dif_ord = sorted(list(dict_tmp[dataset]['Dificuldade']), key=lambda tup: tup[1])
+    listap = [i for i in dif_ord if i[0]-1 in itens]
+    
+    return dif_ord,listap
 
 def plotAll(dict_tmp, bins = None, save = False):
     
@@ -118,7 +135,7 @@ def verificaParametros(irt_dict):
     
     return parameters_dict
 
-def printFreq(tmp_dict):
+def printFreq(tmp_dict, save = False):
     dis = []
     dif = []
     ges = []
@@ -135,28 +152,51 @@ def printFreq(tmp_dict):
     
     lista = [dis, dif, ges]
     name = ['Discriminacao','Dificuldade','Advinhacao']
-    for i in range(len(name)):
-        print('Porcentagem de itens com valores altos do parametro',name[i])
-        print('Dataset \t\t\t\t Percentual de itens\n')
-        for p in lista[i]:
-            print('{:40} {:10.0%}'.format(p[0],p[1]))
-        print('-'*60)
+    if save:
+        file = open(r''+os.getcwd()+'/'+'IRT_param_freq.txt','w')
+        for i in range(len(name)):
+            file.write('Porcentagem de itens com valores altos do parametro '+name[i]+'\n')
+            file.write('Dataset \t\t\t\t Percentual de itens\n')
+            for p in lista[i]:
+                file.write('{:40} {:10.0%}'.format(p[0],p[1])+'\n')
+            file.write('-'*60+'\n')
+        file.close() 
+        print("As frequencias dos parametros de item foram salvas \o/\n")
+    else:
+        for i in range(len(name)):
+            print('Porcentagem de itens com valores altos do parametro',name[i])
+            print('Dataset \t\t\t\t Percentual de itens\n')
+            for p in lista[i]:
+                print('{:40} {:10.0%}'.format(p[0],p[1]))
+            print('-'*60)
+        
 
-def thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_theta):
+def thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_theta, bins = None,save = False, out = out):
     from catsim.estimation import HillClimbingEstimator
 
     names = str(list_theta[dataset].keys).split()[6:]
     names = [names[i] for i in range(0,len(names),2)]
     tmp = {}
+        
     for t in range(len(names)):
         
         itens = []
         item_resp = []
         if parameter == 'Dificuldade':
-            #Separa as instâncias com discriminacao maior que zero
-            dis = [i for i in list(dict_tmp[dataset]['Discriminacao']) if i[1] > 0]
-            itens = [i[0]-1 for i in dis]
-            #Cria o vetor booleano de respostas
+#            #Separa as instâncias com discriminacao maior que zero
+#            dis = [i for i in list(dict_tmp[dataset]['Discriminacao']) if i[1] > 0]
+#            
+#            itens = [i[0]-1 for i in dis]
+#            #Cria o vetor booleano de respostas
+#            item_resp_tmp = [True if i == 1 else False for i in irt_resp_dict[dataset][t]]
+#            item_resp = [item_resp_tmp[i] for i in itens]
+#            
+#            ###############
+            dif_ord,listap = calcDif(dict_tmp,dataset)
+            #print(dif_ord)
+            itens = [i[0]-1 for i in dif_ord]
+#            item_resp = [item_resp_tmp[i] for i in itens]
+            #itens = [i for i in range(len(irt_dict[dataset]))]
             item_resp_tmp = [True if i == 1 else False for i in irt_resp_dict[dataset][t]]
             item_resp = [item_resp_tmp[i] for i in itens]
             
@@ -169,30 +209,50 @@ def thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_thet
             item_resp = [True if i == 1 else False for i in irt_resp_dict[dataset][t]]
             #raise ValueError("Os parametros permetidos sao Dificuldade e Descriminacaos")
         
-        #Calcula o novo theta com base na acuracia de cada classificador
-        items=irt_dict[dataset]
-        adm_items= itens
-        r_vector=item_resp
+        #print(itens)
         e_theta=list_theta[dataset].to_numpy()[t][0]
-        new_theta = HillClimbingEstimator().estimate(items=items, 
-                                         administered_items= adm_items, 
-                                         response_vector=r_vector, 
-                                         est_theta=e_theta)
+        #print(e_theta)
+        qtd = len(itens)//10
+        #print('qtd ',qtd)
+        #print(itens)
+        #a = input('TEste')
+        for i in range(10):
+        #Calcula o novo theta com base na acuracia de cada classificador
+            items=irt_dict[dataset]
+            adm_items= itens[:qtd]
+            #print(items)
+            itens = itens[qtd:]#Corte
+            r_vector=item_resp[:qtd]
+            item_resp = item_resp[qtd:]#Corte
+            #e_theta=list_theta[dataset].to_numpy()[t][0]
+            new_theta = HillClimbingEstimator().estimate(items=items, 
+                                             administered_items= adm_items, 
+                                             response_vector=r_vector, 
+                                             est_theta=e_theta)
+            e_theta = new_theta
         
         #list_new_theta.append(new_theta)
         
         tmp[names[t]] = new_theta
+        #print(names[t])
+   
+    if save:
+        df = pd.DataFrame(list(tmp.items()),index=tmp.keys(), columns=['Clf','Theta'])
+        df.to_csv(os.getcwd()+out+'/'+dataset+'/'+'theta_list.csv',index=0)
     
     return tmp
         #dict_theta[dataset] = tmp
 
-def thetaAllClfEstimate(dict_tmp, irt_dict, irt_resp_dict, list_theta):
+def thetaAllClfEstimate(dict_tmp, irt_dict, irt_resp_dict, list_theta, param = ['Dificuldade','Discriminacao', 'Adivinhacao'], save = False):
     dict_theta = {}
     for dataset in list(dict_tmp.keys()):
         p = {}
-        for parameter in ['Dificuldade','Discriminacao', 'Adivinhacao']:
-            p[parameter] = thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_theta)
+        for parameter in param:
+            p[parameter] = thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_theta,save = save)
         dict_theta[dataset] = p
+        
+    if save:
+        print('Todos os valores de Theta foram salvos \o/')
         
     return dict_theta
         
@@ -210,16 +270,100 @@ def CalcICC(dict_theta,irt_dict):
         icc_dict[dataset] = p
         
     return icc_dict
-  
+
+def calcPro(icc_dict,dict_tmp,dataset,save = False):
+    dif_ord,listap = calcDif(dict_tmp,dataset)
+    itens = [i[0]-1 for i in listap]
+    score_total = []
+    score_pos = []
+    clfs = list(icc_dict[dataset]['Dificuldade'].keys())
+    
+    for clf in clfs:
+        #score_total[clf] = sum(icc_dict[dataset]['Dificuldade'][clf])
+        score_total.append(sum(icc_dict[dataset]['Dificuldade'][clf]))
+        lista = [icc_dict[dataset]['Dificuldade'][clf][i] for i in itens]
+        #score_pos[clf] = sum(lista)
+        score_pos.append(sum(lista))
+    
+    l_score_total = list(zip(clfs,score_total))
+    l_score_pos = list(zip(clfs,score_pos))
+    
+    l_score_total.sort(key=lambda tup: tup[1])
+    l_score_pos.sort(key=lambda tup: tup[1])
+    #print(l_score_total)
+    
+    import matplotlib.pyplot as plt
+    eager = ['otimo','SVM', 'MLPClassifier','DecisionTreeClassifier()','GaussianNB', 'BernoulliNB']
+    ensemble = ['RandomForestClassifier(3_estimators)', 'RandomForestClassifier(5_estimators)', 'RandomForestClassifier']
+    lazy = ['KNeighborsClassifier(2)', 'KNeighborsClassifier(3)', 'KNeighborsClassifier(5)', 'KNeighborsClassifier(8)','rand1', 'rand2', 'rand3', 'majoritario', 'minoritario', 'pessimo']
+    
+    key = [1,1,1]
+    for clfscore in l_score_total:    
+        if clfscore[0] in eager:
+            if key[0]:
+                key[0] = 0
+                plt.plot(clfscore[1], clfscore[0], 'ro',color='deepskyblue',label='eager')
+            else:
+                plt.plot(clfscore[1], clfscore[0], 'ro',color='deepskyblue')
+            #plt.legend(plt, ['eager'])
+        if clfscore[0] in ensemble:
+            if key[1]:
+                key[1] = 0
+                plt.plot(clfscore[1], clfscore[0], 'ro',color='gold',label='ensemble')
+            else:
+                plt.plot(clfscore[1], clfscore[0], 'ro',color='gold')
+        if clfscore[0] in lazy:
+            if key[2]:
+                key[2] = 0
+                plt.plot(clfscore[1], clfscore[0], 'ro',color='orangered',label='lazy')
+            else:
+                plt.plot(clfscore[1], clfscore[0], 'ro',color='orangered')
+    
+    plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.15),ncol=3, fancybox=True)
+    plt.grid(axis='y',linestyle='--')
+    plt.xlabel('score')
+    #plt.show()
+    
+    if save:
+        cols = ['Clf','Score']
+        saveFile(l_score_total,cols,os.getcwd()+out+'/'+dataset+'/','score_total.csv')
+        saveFile(l_score_pos,cols,os.getcwd()+out+'/'+dataset+'/','score_disPositivo.csv')
+        plt.savefig(os.getcwd()+out+'/'+dataset+'/'+dataset+'_score.png',dpi=200, bbox_inches='tight')
+        plt.close()
+    else:
+        print('\nScores dos classificadores para o dataset:',dataset,'\n')
+        print('Score total dos classificadores:\n')
+        for i in range(len(clfs)):
+            print('{:40} {:10}'.format(l_score_total[i][0],l_score_total[i][1]))
+        #print('-'*60)
+        plt.savefig(os.getcwd()+out+'/'+dataset+'/'+parameter+'_CCC.png',dpi=200, bbox_inches='tight')
+        plt.close()
+        print('\nScore com discriminacao positiva:\n')
+        for i in range(len(clfs)):
+            print('{:40} {:10}'.format(l_score_pos[i][0],l_score_pos[i][1]))
+        print('-'*60)
+        plt.show()
+    #return score_total,score_pos
+            
+def calcAllPro(icc_dict,dict_tmp,save = False):
+    datasets = list(icc_dict.keys())
+    
+    for dataset in datasets:
+         calcPro(icc_dict,dict_tmp,dataset,save = save)
+         
+    if save:
+        print('\nOs scores dos classificadores para todos os datasets foram salvos \o/\n')
+    
 def plotCCC(icc_dict,dict_tmp,dataset,parameter,save = False,out = out):
     from matplotlib import pyplot as plt
     
     listap = []
     if parameter == 'Dificuldade':
-        dis = [i for i in list(dict_tmp[dataset]['Discriminacao']) if i[1] > 0]
-        itens = [i[0]-1 for i in dis]
-        dif_ord = sorted(list(dict_tmp[dataset][parameter]), key=lambda tup: tup[1])
-        listap = [i for i in dif_ord if i[0]-1 in itens]
+        # dis = [i for i in list(dict_tmp[dataset]['Discriminacao']) if i[1] > 0]
+        # itens = [i[0]-1 for i in dis]
+        # dif_ord = sorted(list(dict_tmp[dataset][parameter]), key=lambda tup: tup[1])
+        # listap = [i for i in dif_ord if i[0]-1 in itens]
+        dif_ord,listap = calcDif(dict_tmp,dataset)
         
     elif parameter == 'Discriminacao':
         listap = sorted(list(dict_tmp[dataset]['Discriminacao']), key=lambda tup: tup[1])
@@ -227,7 +371,7 @@ def plotCCC(icc_dict,dict_tmp,dataset,parameter,save = False,out = out):
     elif parameter == 'Adivinhacao':
         listap = sorted(list(dict_tmp[dataset]['Adivinhacao']), key=lambda tup: tup[1])
         #raise ValueError("Os parametros permetidos sao Dificuldade e Descriminacaos")
-        
+    #print(listap)    
     list_index = [i[0]-1 for i in listap]
     tmp = {}
     clfs = list(icc_dict[dataset][parameter].keys())
@@ -243,6 +387,7 @@ def plotCCC(icc_dict,dict_tmp,dataset,parameter,save = False,out = out):
     plt.xlabel(parameter)
     plt.ylabel('P(\u03B8)')
     clfs = ['GaussianNB','KNeighborsClassifier(8)', 'DecisionTreeClassifier()', 'RandomForestClassifier', 'SVM', 'MLPClassifier', 'rand1']
+    #clfs = ['otimo','pessimo']
     for clf in clfs[:12]:
         plt.plot(x, list(tmp[clf]), label=clf, alpha=0.8, linewidth = 1)
     plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
@@ -284,7 +429,7 @@ for path in list_dir:
 
 dict_tmp = verificaParametros(irt_dict)
 tmp_freq = freqParam(dict_tmp)
-printFreq(tmp_freq)
+printFreq(tmp_freq,save = arguments.save)
 
 if arguments.plotDataHist != None:
     dataset,parameter = arguments.plotDataHist.split(',')
@@ -297,15 +442,34 @@ if arguments.plotDataCCC != None:
     dataset,parameter = arguments.plotDataCCC.split(',')
     dict_theta = {}
     p = {}
-    p[parameter] = thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_theta)
+    p[parameter] = thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_theta,save = arguments.save)
     dict_theta[dataset] = p
     icc_dict = CalcICC(dict_theta,irt_dict)
     plotCCC(icc_dict,dict_tmp,dataset,parameter,save = arguments.save)
     
 if arguments.plotAllCCC:
-    dict_theta = thetaAllClfEstimate(dict_tmp,irt_dict,irt_resp_dict,list_theta)
+    dict_theta = thetaAllClfEstimate(dict_tmp,irt_dict,irt_resp_dict,list_theta,save = arguments.save)
     icc_dict = CalcICC(dict_theta,irt_dict)
     plotAllCCC(icc_dict,dict_tmp,save = arguments.save)
+
+if arguments.scoreData != None:
+    dataset = arguments.scoreData
+    dict_theta = {}
+    p = {}
+    p['Dificuldade'] = thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,'Dificuldade',list_theta,save = arguments.save)
+    dict_theta[dataset] = p
+    icc_dict = CalcICC(dict_theta,irt_dict)
+    calcPro(icc_dict,dict_tmp,dataset,save = arguments.save)
+    
+if arguments.scoreAll:
+    dict_theta = thetaAllClfEstimate(dict_tmp,irt_dict,irt_resp_dict,list_theta,param = ['Dificuldade'],save = arguments.save)
+    icc_dict = CalcICC(dict_theta,irt_dict)
+    calcAllPro(icc_dict,dict_tmp,save = arguments.save)
+    
+#dict_theta = thetaAllClfEstimate(dict_tmp,irt_dict,irt_resp_dict,list_theta,save = False)
+#icc_dict = CalcICC(dict_theta,irt_dict)
+#score1,score2 = calcPro(icc_dict,dict_tmp,'credit-g')
+#dif_ord,listap = calcDif(dict_tmp,'credit-g')
     
 ''' 
 for p in names:
