@@ -58,6 +58,14 @@ def saveFile(lis,cols,path,name):
     df_media = pd.DataFrame(lis, columns = cols)
     df_media.to_csv(r''+path+name,index=0)
 
+def compare_score(score1,score2):
+    if score1 > score2:
+        return 1
+    if score1 < score2:
+        return 0
+    if score1 == score2:
+        return 0.5
+
 def calcDif(dict_tmp,dataset):
     
     dis = [i for i in list(dict_tmp[dataset]['Discriminacao']) if i[1] > 0]
@@ -465,25 +473,3 @@ if arguments.scoreAll:
     dict_theta = thetaAllClfEstimate(dict_tmp,irt_dict,irt_resp_dict,list_theta,param = ['Dificuldade'],save = arguments.save)
     icc_dict = CalcICC(dict_theta,irt_dict)
     calcAllPro(icc_dict,dict_tmp,save = arguments.save)
-    
-#dict_theta = thetaAllClfEstimate(dict_tmp,irt_dict,irt_resp_dict,list_theta,save = False)
-#icc_dict = CalcICC(dict_theta,irt_dict)
-#score1,score2 = calcPro(icc_dict,dict_tmp,'credit-g')
-#dif_ord,listap = calcDif(dict_tmp,'credit-g')
-    
-''' 
-for p in names:
-    print(dict_theta['chatfield_4'][p]) 
-    print(icc(dict_theta['chatfield_4'][p],129.207,-0.692,0,1))
-    print('-------------------------')
-
-#(theta,discriminacao,dificuldade,guessing,assinstota)
-for i in range(len(list_new_theta)):
-    theta = icc(list_new_theta[i],new_irt[0][0],new_irt[0][1],new_irt[0][2],new_irt[0][3])
-    print(theta)'''
-    
-#plot.item_curve(new_irt[0][0],new_irt[0][1],new_irt[0][2],new_irt[0][3],title= 'Teste',
-#    ptype='both',
-#    max_info=True,
-#    filepath= None,
-#    show= True)
