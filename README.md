@@ -4,7 +4,7 @@ A IRT application using OpenML database. The objective is to perform the complex
 
 ## How to use
 
-decodIRT is a ready-to-use tool, just download and run :)
+decodIRT is a ready-to-use tool, just download and run.
 
 Some dependencies need to be installed for the tool to work. They are listed below.
 
@@ -48,9 +48,9 @@ The output directory can be changed if the script is executed with the -output p
 
 ### decodIRT_MLtIRT
 
-This script is in charge of calculating IRT parameters using the R language. But don't worry! The script takes care of installing the R packages, you only need Python ;)
+This script is in charge of calculating IRT parameters using the R language. But don't worry! The script takes care of installing the R packages, you only need Python.
 
-To run this script, just enter the directory where the generated files were saved and the script does the rest :)
+To run this script, just enter the directory where the generated files were saved and the script does the rest.
 
 `$ python decodIRT_MLtIRT -dir dir_name`
 
@@ -68,4 +68,4 @@ There are more parameters that allow the user to control the value limit of each
 
 ## Author's Note
 
-I hope this tool can help you realize interesting insights and assist you in your research! ;)
+I hope this tool can help you realize interesting insights and assist you in your research!
