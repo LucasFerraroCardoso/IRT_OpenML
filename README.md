@@ -15,7 +15,7 @@ Some dependencies need to be installed for the tool to work. They are listed bel
 - Numpy
 - Pandas
 - Matplotlib
-- Package rpy2
+- Package rpy2 (It is necessary to have R installed)
 - Catsim
 
 Once all the necessary packages are installed, we can move on to running the decodIRT tool.
@@ -48,13 +48,13 @@ The output directory can be changed if the script is executed with the -output p
 
 ### decodIRT_MLtIRT
 
-This script is in charge of calculating IRT parameters using the R language. But don't worry! The script takes care of installing the R packages, you only need Python.
+This script is in charge of calculating IRT parameters using the R language. But don't worry! The script takes care of installing the R packages.
 
 To run this script, just enter the directory where the generated files were saved and the script does the rest.
 
 `$ python decodIRT_MLtIRT -dir dir_name`
 
-In this case the default name (output) was left for the output directory in decodIRT_OtML so it would not be necessary to pass the -dir parameter. The result of this script will be a file containing the TRI item parameters for 30% of the dataset that was used for testing after a 70/30 split.
+In this case the default name (output) was left for the output directory in decodIRT_OtML so it would not be necessary to pass the -dir parameter. The result of this script will be a file containing the TRI item parameters for 30% of the dataset that was used for testing after a 70/30 split. In case the dataset is very large, the split is adapted to leave 500 instances for testing, the rest is used in training.
 
 ### decodIRT_analysis
 
@@ -65,6 +65,10 @@ The decodIRT_analysis script, as the name already suggests, aims to perform anal
 This command will generate all histograms, curve graphs and save them into the directory where the dataset was downloaded. If the -save parameter is not passed, all requested graphics will be shown on the run screen.
 
 There are more parameters that allow the user to control the value limit of each item parameter, the number of histogram bins and for which dataset and item parameter (Discrimination, Difficulty, Guessing) the graphs will be generated.
+
+It is also possible to calculate a score for the classifiers. For this, the IRT True-Score concept was implemented. The following command will perform this calculation and generate a graph comparing the scores of the classifiers.
+
+`$ python decodIRT_analysis -dir dir_name -scoreAll -save`
 
 ## Author's Note
 
