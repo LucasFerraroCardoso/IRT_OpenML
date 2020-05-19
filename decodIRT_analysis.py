@@ -344,8 +344,8 @@ def calcPro(icc_dict,dict_tmp,dataset,save = False):
         for i in range(len(clfs)):
             print('{:40} {:10}'.format(l_score_total[i][0],l_score_total[i][1]))
         #print('-'*60)
-        plt.savefig(os.getcwd()+out+'/'+dataset+'/'+parameter+'_CCC.png',dpi=200, bbox_inches='tight')
-        plt.close()
+        #plt.savefig(os.getcwd()+out+'/'+dataset+'/'+parameter+'_CCC.png',dpi=200, bbox_inches='tight')
+        #plt.close()
         print('\nScore com discriminacao positiva:\n')
         for i in range(len(clfs)):
             print('{:40} {:10}'.format(l_score_pos[i][0],l_score_pos[i][1]))
