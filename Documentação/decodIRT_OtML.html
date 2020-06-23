@@ -1,0 +1,58 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module decodIRT_OtML</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>decodIRT_OtML</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/lucas/Dropbox/Mestrado/benchmark/decodIRT_OtML.py">/home/lucas/Dropbox/Mestrado/benchmark/decodIRT_OtML.py</a></font></td></tr></table>
+    <p><tt>Created&nbsp;on&nbsp;Sat&nbsp;Oct&nbsp;26&nbsp;08:56:33&nbsp;2019<br>
+&nbsp;<br>
+@author:&nbsp;Lucas&nbsp;Cardoso<br>
+&nbsp;<br>
+Primeiro&nbsp;script&nbsp;da&nbsp;ferramenta&nbsp;decodIRT.&nbsp;O&nbsp;objetivo&nbsp;desse&nbsp;script&nbsp;é&nbsp;baixar<br>
+os&nbsp;datasets&nbsp;do&nbsp;OpenML&nbsp;e&nbsp;gerar&nbsp;os&nbsp;modelos&nbsp;de&nbsp;ML&nbsp;para&nbsp;o&nbsp;cálculo&nbsp;do&nbsp;IRT.<br>
+&nbsp;<br>
+Link&nbsp;do&nbsp;código-fonte:&nbsp;https://github.com/LucasFerraroCardoso/IRT_OpenML</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="argparse.html">argparse</a><br>
+<a href="csv.html">csv</a><br>
+<a href="gc.html">gc</a><br>
+</td><td width="25%" valign=top><a href="numpy.html">numpy</a><br>
+<a href="openml.html">openml</a><br>
+<a href="os.html">os</a><br>
+</td><td width="25%" valign=top><a href="pandas.html">pandas</a><br>
+<a href="time.html">time</a><br>
+<a href="warnings.html">warnings</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-compare"><strong>compare</strong></a>(original, res)</dt><dd><tt>Função&nbsp;que&nbsp;compara&nbsp;as&nbsp;repostas&nbsp;de&nbsp;um&nbsp;modelo&nbsp;de&nbsp;ML&nbsp;com&nbsp;as&nbsp;classes&nbsp;originais.<br>
+&nbsp;<br>
+Entrada:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;original:&nbsp;Lista&nbsp;com&nbsp;as&nbsp;classes&nbsp;corretas.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res:&nbsp;Lista&nbsp;da&nbsp;classificação&nbsp;do&nbsp;modelo.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Saída:&nbsp;Uma&nbsp;lista&nbsp;de&nbsp;acerto&nbsp;e&nbsp;erro,&nbsp;sendo&nbsp;1&nbsp;para&nbsp;acerto&nbsp;e&nbsp;0&nbsp;para&nbsp;erro.</tt></dd></dl>
+ <dl><dt><a name="-saveFile"><strong>saveFile</strong></a>(lis, cols, path, name)</dt><dd><tt>Função&nbsp;que&nbsp;salva&nbsp;arquivos&nbsp;em&nbsp;csv.<br>
+&nbsp;<br>
+Entrada:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;lis:&nbsp;Lista&nbsp;dos&nbsp;valores&nbsp;a&nbsp;serem&nbsp;salvos.&nbsp;Pode&nbsp;ser&nbsp;uma&nbsp;lista&nbsp;de&nbsp;lista.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;cols:&nbsp;Lista&nbsp;com&nbsp;o&nbsp;nome&nbsp;das&nbsp;colunas.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;path:&nbsp;Diretório&nbsp;onde&nbsp;será&nbsp;salvo&nbsp;o&nbsp;arquivo&nbsp;csv.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;name:&nbsp;Nome&nbsp;do&nbsp;arquivo&nbsp;que&nbsp;será&nbsp;salvo.</tt></dd></dl>
+</td></tr></table>
+</body></html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module decodIRT_analysis</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>decodIRT_analysis</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/lucas/Dropbox/Mestrado/benchmark/decodIRT_analysis.py">/home/lucas/Dropbox/Mestrado/benchmark/decodIRT_analysis.py</a></font></td></tr></table>
+    <p><tt>Created&nbsp;on&nbsp;Sun&nbsp;Oct&nbsp;27&nbsp;13:43:16&nbsp;2019<br>
+&nbsp;<br>
+@author:&nbsp;Lucas<br>
+&nbsp;<br>
+Último&nbsp;script&nbsp;da&nbsp;ferramenta&nbsp;decodIRT.&nbsp;O&nbsp;objetivo&nbsp;desse&nbsp;script&nbsp;é&nbsp;utilizar&nbsp;os<br>
+dados&nbsp;gerados&nbsp;pelos&nbsp;scripts&nbsp;anteriores&nbsp;para&nbsp;realizar&nbsp;as&nbsp;analises&nbsp;sobre&nbsp;os<br>
+datasets&nbsp;e&nbsp;sobre&nbsp;os&nbsp;modelos&nbsp;de&nbsp;ML&nbsp;utilizando&nbsp;os&nbsp;calculos&nbsp;da&nbsp;IRT.<br>
+&nbsp;<br>
+Link&nbsp;do&nbsp;código-fonte:&nbsp;https://github.com/LucasFerraroCardoso/IRT_OpenML</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="argparse.html">argparse</a><br>
+<a href="copy.html">copy</a><br>
+</td><td width="25%" valign=top><a href="math.html">math</a><br>
+<a href="numpy.html">numpy</a><br>
+</td><td width="25%" valign=top><a href="os.html">os</a><br>
+<a href="pandas.html">pandas</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-CalcICC"><strong>CalcICC</strong></a>(dict_theta, irt_dict)</dt><dd><tt>Função&nbsp;que&nbsp;calcula&nbsp;a&nbsp;probabilidade&nbsp;de&nbsp;acerto&nbsp;de&nbsp;todos&nbsp;os&nbsp;classificadores<br>
+para&nbsp;todas&nbsp;as&nbsp;instâncias&nbsp;de&nbsp;um&nbsp;dataset.<br>
+&nbsp;<br>
+Entrada:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;dict_tmp:&nbsp;Dicionário&nbsp;com&nbsp;os&nbsp;valores&nbsp;de&nbsp;theta&nbsp;dos&nbsp;classificadores.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;irt_dict:&nbsp;Dicionário&nbsp;com&nbsp;todos&nbsp;os&nbsp;datasets&nbsp;e&nbsp;seus&nbsp;respectivos<br>
+&nbsp;&nbsp;&nbsp;&nbsp;parâmetros&nbsp;de&nbsp;item&nbsp;em&nbsp;array&nbsp;numpy.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Saída:&nbsp;Retorna&nbsp;um&nbsp;dicionário&nbsp;com&nbsp;o&nbsp;valor&nbsp;da&nbsp;probabilidade&nbsp;de&nbsp;acerto.</tt></dd></dl>
+ <dl><dt><a name="-calcAllPro"><strong>calcAllPro</strong></a>(icc_dict, dict_tmp, save=False)</dt><dd><tt>Função&nbsp;que&nbsp;chama&nbsp;a&nbsp;função&nbsp;calcPro&nbsp;e&nbsp;calcula&nbsp;a&nbsp;os&nbsp;valores&nbsp;de&nbsp;True-Score&nbsp;para<br>
+todos&nbsp;os&nbsp;classificadores&nbsp;para&nbsp;todos&nbsp;os&nbsp;determinado&nbsp;dataset.<br>
+&nbsp;<br>
+Entrada:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;icc_dict:&nbsp;Dicionário&nbsp;com&nbsp;a&nbsp;probabilidade&nbsp;de&nbsp;acerto.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;dict_tmp:&nbsp;Dicionário&nbsp;com&nbsp;os&nbsp;valores&nbsp;de&nbsp;theta&nbsp;dos&nbsp;classificadores.</tt></dd></dl>
+ <dl><dt><a name="-calcDif"><strong>calcDif</strong></a>(dict_tmp, dataset)</dt><dd><tt>Função&nbsp;que&nbsp;ordena&nbsp;os&nbsp;valores&nbsp;de&nbsp;dificuldade&nbsp;de&nbsp;um&nbsp;dataset&nbsp;específico&nbsp;e<br>
+traz&nbsp;os&nbsp;indices&nbsp;dos&nbsp;valores&nbsp;ordenados&nbsp;apenas&nbsp;para&nbsp;instâncias&nbsp;com<br>
+discriminação&nbsp;positiva.<br>
+&nbsp;<br>
+Entrada:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;dict_tmp:&nbsp;Dicionário&nbsp;com&nbsp;todos&nbsp;os&nbsp;datasets&nbsp;e&nbsp;seus&nbsp;respectivos<br>
+&nbsp;&nbsp;&nbsp;&nbsp;parâmetros&nbsp;de&nbsp;item.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;score2:&nbsp;Nome&nbsp;do&nbsp;dataset.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Saída:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;dif_ord:&nbsp;Retorna&nbsp;uma&nbsp;lista&nbsp;com&nbsp;todos&nbsp;as&nbsp;instâncias&nbsp;ordenadas&nbsp;pela<br>
+&nbsp;&nbsp;&nbsp;&nbsp;dificuldade.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;listap:&nbsp;Retorna&nbsp;uma&nbsp;lista&nbsp;com&nbsp;os&nbsp;indices&nbsp;das&nbsp;instâncias&nbsp;ordenadas&nbsp;pela<br>
+&nbsp;&nbsp;&nbsp;&nbsp;dificuldade<br>
+&nbsp;&nbsp;&nbsp;&nbsp;e&nbsp;com&nbsp;valores&nbsp;de&nbsp;discriminação&nbsp;positivos.</tt></dd></dl>
+ <dl><dt><a name="-calcPro"><strong>calcPro</strong></a>(icc_dict, dict_tmp, dataset, save=False)</dt><dd><tt>Função&nbsp;que&nbsp;calcula&nbsp;a&nbsp;os&nbsp;valores&nbsp;de&nbsp;True-Score&nbsp;para&nbsp;os&nbsp;classificadores&nbsp;para<br>
+um&nbsp;determinado&nbsp;dataset&nbsp;e&nbsp;gera&nbsp;um&nbsp;gráfico&nbsp;agrupando&nbsp;os&nbsp;classificadores.<br>
+&nbsp;<br>
+Entrada:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;icc_dict:&nbsp;Dicionário&nbsp;com&nbsp;a&nbsp;probabilidade&nbsp;de&nbsp;acerto.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;dict_tmp:&nbsp;Dicionário&nbsp;com&nbsp;os&nbsp;valores&nbsp;de&nbsp;theta&nbsp;dos&nbsp;classificadores.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;dataset:&nbsp;String&nbsp;com&nbsp;o&nbsp;nome&nbsp;do&nbsp;dataset.</tt></dd></dl>
+ <dl><dt><a name="-compare_score"><strong>compare_score</strong></a>(score1, score2)</dt><dd><tt>Função&nbsp;que&nbsp;compara&nbsp;os&nbsp;valores&nbsp;de&nbsp;True-Score&nbsp;de&nbsp;dois&nbsp;classificadores&nbsp;e&nbsp;<br>
+retorna&nbsp;uma&nbsp;pontuação&nbsp;para&nbsp;o&nbsp;sistema&nbsp;Glicko-2.<br>
+&nbsp;<br>
+Entrada:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;score1:&nbsp;Valor&nbsp;de&nbsp;score&nbsp;do&nbsp;primeiro&nbsp;classificador.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;score2:&nbsp;Valor&nbsp;de&nbsp;score&nbsp;do&nbsp;segundo&nbsp;classificador.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Saída:&nbsp;Retorna&nbsp;uma&nbsp;pontuação&nbsp;de&nbsp;1&nbsp;para&nbsp;maior,&nbsp;0&nbsp;para&nbsp;menor&nbsp;e&nbsp;0.5&nbsp;para<br>
+empate.</tt></dd></dl>
+ <dl><dt><a name="-freqParam"><strong>freqParam</strong></a>(irt_dict_tmp)</dt><dd><tt>Função&nbsp;que&nbsp;calcula&nbsp;o&nbsp;percentual&nbsp;de&nbsp;instâncias&nbsp;que&nbsp;tem&nbsp;seus&nbsp;parâmetros&nbsp;de<br>
+item&nbsp;maior&nbsp;que&nbsp;determinados&nbsp;valores&nbsp;limite.<br>
+&nbsp;<br>
+Entrada:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;irt_dict_tmp:&nbsp;Dicionário&nbsp;com&nbsp;todos&nbsp;os&nbsp;datasets&nbsp;e&nbsp;seus&nbsp;respectivos<br>
+&nbsp;&nbsp;&nbsp;&nbsp;parâmetros&nbsp;de&nbsp;item.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Saída:&nbsp;Retorna&nbsp;um&nbsp;dicionário&nbsp;contendo&nbsp;o&nbsp;percentual&nbsp;dos&nbsp;parâmetros&nbsp;de&nbsp;item<br>
+de&nbsp;cada&nbsp;dataset.</tt></dd></dl>
+ <dl><dt><a name="-plotAll"><strong>plotAll</strong></a>(dict_tmp, bins=None, save=False)</dt><dd><tt>Função&nbsp;que&nbsp;chama&nbsp;a&nbsp;função&nbsp;plothist&nbsp;para&nbsp;gerar&nbsp;o&nbsp;histograma&nbsp;de&nbsp;todos&nbsp;os<br>
+parametros&nbsp;de&nbsp;item&nbsp;de&nbsp;todos&nbsp;os&nbsp;datasets.<br>
+&nbsp;<br>
+Entrada:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;dict_tmp:&nbsp;Dicionário&nbsp;com&nbsp;todos&nbsp;os&nbsp;datasets&nbsp;e&nbsp;seus&nbsp;respectivos<br>
+&nbsp;&nbsp;&nbsp;&nbsp;parâmetros&nbsp;de&nbsp;item.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bins:&nbsp;Int&nbsp;do&nbsp;Número&nbsp;de&nbsp;bins.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;save:&nbsp;Variavel&nbsp;utilizada&nbsp;para&nbsp;salvar&nbsp;ou&nbsp;não&nbsp;os&nbsp;plots.</tt></dd></dl>
+ <dl><dt><a name="-plotAllCCC"><strong>plotAllCCC</strong></a>(icc_dict, dict_tmp, save=False)</dt><dd><tt>Função&nbsp;que&nbsp;chama&nbsp;o&nbsp;metódo&nbsp;plotCCC&nbsp;e&nbsp;gera&nbsp;as&nbsp;CCC's&nbsp;para&nbsp;todos&nbsp;os&nbsp;datasets&nbsp;e&nbsp;<br>
+parâmetros&nbsp;de&nbsp;item.<br>
+&nbsp;<br>
+Entrada:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;icc_dict:&nbsp;Dicionário&nbsp;com&nbsp;a&nbsp;probabilidade&nbsp;de&nbsp;acerto.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;dict_tmp:&nbsp;Dicionário&nbsp;com&nbsp;os&nbsp;valores&nbsp;de&nbsp;theta&nbsp;dos&nbsp;classificadores.</tt></dd></dl>
+ <dl><dt><a name="-plotCCC"><strong>plotCCC</strong></a>(icc_dict, dict_tmp, dataset, parameter, save=False)</dt><dd><tt>Função&nbsp;que&nbsp;gera&nbsp;as&nbsp;Curvas&nbsp;Características&nbsp;de&nbsp;Classificador&nbsp;(CCC)&nbsp;com&nbsp;base<br>
+no&nbsp;trabalho&nbsp;de&nbsp;Martínez-Plumed&nbsp;et&nbsp;al.&nbsp;(2016)&nbsp;para&nbsp;um&nbsp;determinado&nbsp;dataset&nbsp;e<br>
+um&nbsp;dado&nbsp;parametro&nbsp;de&nbsp;item.<br>
+&nbsp;<br>
+Entrada:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;icc_dict:&nbsp;Dicionário&nbsp;com&nbsp;a&nbsp;probabilidade&nbsp;de&nbsp;acerto.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;dict_tmp:&nbsp;Dicionário&nbsp;com&nbsp;os&nbsp;valores&nbsp;de&nbsp;theta&nbsp;dos&nbsp;classificadores.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;dataset:&nbsp;String&nbsp;com&nbsp;o&nbsp;nome&nbsp;do&nbsp;dataset.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;parameter:&nbsp;String&nbsp;com&nbsp;o&nbsp;parametro&nbsp;de&nbsp;item.</tt></dd></dl>
+ <dl><dt><a name="-plothist"><strong>plothist</strong></a>(dict_tmp, parameter, dataset, bins=None, save=False)</dt><dd><tt>Função&nbsp;que&nbsp;gera&nbsp;histograma&nbsp;de&nbsp;determinado&nbsp;parametro&nbsp;de&nbsp;item&nbsp;de&nbsp;um&nbsp;dataset<br>
+específico.<br>
+&nbsp;<br>
+Entrada:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;dict_tmp:&nbsp;Dicionário&nbsp;com&nbsp;todos&nbsp;os&nbsp;datasets&nbsp;e&nbsp;seus&nbsp;respectivos<br>
+&nbsp;&nbsp;&nbsp;&nbsp;parâmetros&nbsp;de&nbsp;item.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;parameter:&nbsp;String&nbsp;com&nbsp;o&nbsp;parametro&nbsp;de&nbsp;item.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;dataset:&nbsp;String&nbsp;do&nbsp;nome&nbsp;do&nbsp;dataset.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bins:&nbsp;Int&nbsp;com&nbsp;o&nbsp;número&nbsp;de&nbsp;bins.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;save:&nbsp;Variavel&nbsp;utilizada&nbsp;para&nbsp;salvar&nbsp;ou&nbsp;não&nbsp;os&nbsp;plots.</tt></dd></dl>
+ <dl><dt><a name="-printFreq"><strong>printFreq</strong></a>(tmp_dict, save=False)</dt><dd><tt>Função&nbsp;que&nbsp;imprime&nbsp;na&nbsp;tela&nbsp;um&nbsp;ranking&nbsp;dos&nbsp;datasets&nbsp;com&nbsp;base&nbsp;nos&nbsp;percentuais<br>
+calculados&nbsp;de&nbsp;seus&nbsp;parâmetros&nbsp;de&nbsp;item.<br>
+&nbsp;<br>
+Entrada:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;tmp_dict:&nbsp;Dicionário&nbsp;com&nbsp;todos&nbsp;os&nbsp;datasets&nbsp;e&nbsp;seus&nbsp;respectivos<br>
+&nbsp;&nbsp;&nbsp;&nbsp;parâmetros&nbsp;de&nbsp;item.</tt></dd></dl>
+ <dl><dt><a name="-saveFile"><strong>saveFile</strong></a>(lis, cols, path, name)</dt><dd><tt>Função&nbsp;que&nbsp;salva&nbsp;arquivos&nbsp;em&nbsp;csv.<br>
+&nbsp;<br>
+Entrada:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;lis:&nbsp;Lista&nbsp;dos&nbsp;valores&nbsp;a&nbsp;serem&nbsp;salvos.&nbsp;Pode&nbsp;ser&nbsp;uma&nbsp;lista&nbsp;de&nbsp;lista.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;cols:&nbsp;Lista&nbsp;com&nbsp;o&nbsp;nome&nbsp;das&nbsp;colunas.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;path:&nbsp;Diretório&nbsp;onde&nbsp;será&nbsp;salvo&nbsp;o&nbsp;arquivo&nbsp;csv.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;name:&nbsp;Nome&nbsp;do&nbsp;arquivo&nbsp;que&nbsp;será&nbsp;salvo.</tt></dd></dl>
+ <dl><dt><a name="-thetaAllClfEstimate"><strong>thetaAllClfEstimate</strong></a>(dict_tmp, irt_dict, irt_resp_dict, list_theta, param=['Dificuldade', 'Discriminacao', 'Adivinhacao'], save=False)</dt><dd><tt>Função&nbsp;que&nbsp;chama&nbsp;o&nbsp;método&nbsp;thetaClfEstimate&nbsp;e&nbsp;estima&nbsp;o&nbsp;valor&nbsp;de&nbsp;(theta)&nbsp;dos&nbsp;<br>
+classificadores&nbsp;para&nbsp;todos&nbsp;os&nbsp;datasets.<br>
+&nbsp;<br>
+Entrada:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;dict_tmp:&nbsp;Dicionário&nbsp;com&nbsp;todos&nbsp;os&nbsp;datasets&nbsp;e&nbsp;seus&nbsp;respectivos<br>
+&nbsp;&nbsp;&nbsp;&nbsp;parâmetros&nbsp;de&nbsp;item.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;irt_dict:&nbsp;Dicionário&nbsp;com&nbsp;todos&nbsp;os&nbsp;datasets&nbsp;e&nbsp;seus&nbsp;respectivos<br>
+&nbsp;&nbsp;&nbsp;&nbsp;parâmetros&nbsp;de&nbsp;item&nbsp;em&nbsp;array&nbsp;numpy.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;irt_resp_dict:&nbsp;Array&nbsp;numpy&nbsp;contendo&nbsp;as&nbsp;respostas&nbsp;dos&nbsp;classificadores.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Saída:&nbsp;Retorna&nbsp;um&nbsp;dicionário&nbsp;contendo&nbsp;o&nbsp;valor&nbsp;estimado&nbsp;de&nbsp;theta&nbsp;para&nbsp;cada<br>
+um&nbsp;dos&nbsp;classificadores&nbsp;para&nbsp;todos&nbsp;os&nbsp;datasets.</tt></dd></dl>
+ <dl><dt><a name="-thetaClfEstimate"><strong>thetaClfEstimate</strong></a>(dict_tmp, irt_dict, irt_resp_dict, dataset, parameter, list_theta, bins=None, save=False)</dt><dd><tt>Função&nbsp;que&nbsp;estima&nbsp;o&nbsp;valor&nbsp;de&nbsp;habilidade&nbsp;(theta)&nbsp;dos&nbsp;classificadores&nbsp;para&nbsp;um<br>
+dataset&nbsp;específico.<br>
+&nbsp;<br>
+Entrada:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;dict_tmp:&nbsp;Dicionário&nbsp;com&nbsp;todos&nbsp;os&nbsp;datasets&nbsp;e&nbsp;seus&nbsp;respectivos<br>
+&nbsp;&nbsp;&nbsp;&nbsp;parâmetros&nbsp;de&nbsp;item.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;irt_dict:&nbsp;Dicionário&nbsp;com&nbsp;todos&nbsp;os&nbsp;datasets&nbsp;e&nbsp;seus&nbsp;respectivos<br>
+&nbsp;&nbsp;&nbsp;&nbsp;parâmetros&nbsp;de&nbsp;item&nbsp;em&nbsp;array&nbsp;numpy.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;irt_resp_dict:&nbsp;Array&nbsp;numpy&nbsp;contendo&nbsp;as&nbsp;respostas&nbsp;dos&nbsp;classificadores.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;dataset:&nbsp;String&nbsp;com&nbsp;o&nbsp;nome&nbsp;do&nbsp;dataset.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;parameter:&nbsp;String&nbsp;com&nbsp;o&nbsp;parametro&nbsp;de&nbsp;item.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;list_theta:&nbsp;Lista&nbsp;contendo&nbsp;os&nbsp;valores&nbsp;iniciais&nbsp;de&nbsp;theta&nbsp;(acurácia).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bins:&nbsp;Int&nbsp;com&nbsp;o&nbsp;número&nbsp;de&nbsp;bins.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Saída:&nbsp;Retorna&nbsp;um&nbsp;dicionário&nbsp;contendo&nbsp;o&nbsp;valor&nbsp;estimado&nbsp;de&nbsp;theta&nbsp;para&nbsp;cada<br>
+um&nbsp;dos&nbsp;classificadores.</tt></dd></dl>
+ <dl><dt><a name="-verificaParametros"><strong>verificaParametros</strong></a>(irt_dict)</dt><dd><tt>Função&nbsp;que&nbsp;cria&nbsp;um&nbsp;dicionario&nbsp;com&nbsp;todos&nbsp;os&nbsp;parâmetros&nbsp;de&nbsp;item&nbsp;dos&nbsp;datasets<br>
+separados&nbsp;em&nbsp;chaves&nbsp;e&nbsp;listas.<br>
+&nbsp;<br>
+Entrada:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;irt_dict:&nbsp;Dicionário&nbsp;com&nbsp;todos&nbsp;os&nbsp;datasets&nbsp;e&nbsp;seus&nbsp;respectivos<br>
+&nbsp;&nbsp;&nbsp;&nbsp;parâmetros&nbsp;de&nbsp;item&nbsp;em&nbsp;array&nbsp;numpy.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Saída:&nbsp;Retorna&nbsp;um&nbsp;dicionário&nbsp;contendo&nbsp;ps&nbsp;parâmetros&nbsp;de&nbsp;item&nbsp;devidamente<br>
+separados&nbsp;por&nbsp;nome&nbsp;e&nbsp;dataset.</tt></dd></dl>
+</td></tr></table>
+</body></html>
