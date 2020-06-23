@@ -3,6 +3,11 @@
 Created on Sat Oct 26 08:56:33 2019
 
 @author: Lucas Cardoso
+
+Primeiro script da ferramenta decodIRT. O objetivo desse script é baixar
+os datasets do OpenML e gerar os modelos de ML para o cálculo do IRT.
+
+Link do código-fonte: https://github.com/LucasFerraroCardoso/IRT_OpenML
 """
 
 import openml
@@ -29,6 +34,16 @@ from sklearn.model_selection import train_test_split
 warnings.filterwarnings("ignore")
 
 def compare(original, res):
+    """
+    Função que compara as repostas de um modelo de ML com as classes originais.
+    
+    Entrada:
+        original: Lista com as classes corretas.
+        res: Lista da classificação do modelo.
+        
+    Saída: Uma lista de acerto e erro, sendo 1 para acerto e 0 para erro.
+    """
+    
     tmp = []
     for i in range(len(original)):
         if original[i] == res[i]:
@@ -38,6 +53,16 @@ def compare(original, res):
     return tmp
 
 def saveFile(lis,cols,path,name):
+    """
+    Função que salva arquivos em csv.
+    
+    Entrada:
+        lis: Lista dos valores a serem salvos. Pode ser uma lista de lista.
+        cols: Lista com o nome das colunas.
+        path: Diretório onde será salvo o arquivo csv.
+        name: Nome do arquivo que será salvo.
+    """
+    
     df_media = pd.DataFrame(lis, columns = cols)
     df_media.to_csv(r''+path+name,index=0)
 
@@ -63,10 +88,13 @@ if not os.path.exists(out):
 
 listDid = []
 if 'csv' in arguments.data:
-    read = csv.reader( open(arguments.data, "r"))
-    for row in read :
-        for i in row:
-            listDid.append(int(i))
+    try:
+        read = csv.reader( open(arguments.data, "r"))
+        for row in read :
+            for i in row:
+                listDid.append(int(i))
+    except IOError:
+        print('Arquivo datasets.csv não encontrado. Crie ou passe os IDs como uma lista.')
 else:
     listDid = arguments.data.split(',')
 

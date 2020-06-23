@@ -3,6 +3,12 @@
 Created on Sun Oct 27 13:43:16 2019
 
 @author: Lucas
+
+Último script da ferramenta decodIRT. O objetivo desse script é utilizar os
+dados gerados pelos scripts anteriores para realizar as analises sobre os
+datasets e sobre os modelos de ML utilizando os calculos da IRT.
+
+Link do código-fonte: https://github.com/LucasFerraroCardoso/IRT_OpenML
 """
 import os
 import argparse
@@ -12,53 +18,38 @@ import copy
 import math
 from catsim.irt import icc_hpc
 
-#from catsim import plot
-
-parser = argparse.ArgumentParser(description = 'Ferramenta para analise dos datasets via TRI')
-
-parser.add_argument('-dir', action = 'store', dest = 'dir',
-                    default = 'output', required = False,
-                    help = 'Nome do diretório onde estão as pastas dos datasets (Ex: output)')
-parser.add_argument('-limit_dif', action = 'store', dest = 'limit_dif', required = False, type=float,
-                    default = 1,help = 'Valor minimo para um item ser dificil (Ex: 1)')
-parser.add_argument('-limit_dis', action = 'store', dest = 'limit_dis', required = False, type=float,
-                    default = 0.75,help = 'Valor minimo para um item ser discriminativo (Ex: 0.75)')
-parser.add_argument('-limit_adv', action = 'store', dest = 'limit_adv', required = False, type=float,
-                    default = 0.2,help = 'Valor minimo para um item ser de facil adivinhacao (Ex: 0.2)')
-parser.add_argument('-plotDataHist', action = 'store', dest = 'plotDataHist', required = False, 
-                    help = 'Plota o histograma de um parametro de um dataset (Ex: nome_dataset,Dificuldade)')
-parser.add_argument('-plotAllHist', action = 'store_true', dest = 'plotAllHist', required = False,
-                    default = False, help = 'Plota todos os histogramas de cada dataset')
-parser.add_argument('-bins', action = 'store', dest = 'bins', required = False, type=int,
-                    help = 'Define o numero de bins do(s) histograma(s) gerados (Ex: 10)')
-parser.add_argument('-plotDataCCC', action = 'store', dest = 'plotDataCCC', required = False, 
-                    help = 'Plota as CCCs de um parametro de um dataset (Ex: nome_dataset,Dificuldade)')
-parser.add_argument('-plotAllCCC', action = 'store_true', dest = 'plotAllCCC', required = False,
-                    default = False, help = 'Plota todos as CCCs de cada dataset')
-parser.add_argument('-scoreData', action = 'store', dest = 'scoreData', required = False, 
-                    help = 'Calcula o score de todos os classificadores para um dataset (Ex: nome_dataset)')
-parser.add_argument('-scoreAll', action = 'store_true', dest = 'scoreAll', required = False,
-                    default = False, help = 'Calcula o score de todos os classificadores para todos os datasets')
-parser.add_argument('-save', action = 'store_true', dest = 'save', required = False,
-                    default = False, help = 'Salva os graficos mostrados na tela')
-
-arguments = parser.parse_args()
-
-
 global out
 global limit_dif
 global limit_dis
 global limit_adv
-out  = '/'+arguments.dir
-limit_dif = arguments.limit_dif
-limit_dis = arguments.limit_dis
-limit_adv = arguments.limit_adv
 
 def saveFile(lis,cols,path,name):
+    """
+    Função que salva arquivos em csv.
+    
+    Entrada:
+        lis: Lista dos valores a serem salvos. Pode ser uma lista de lista.
+        cols: Lista com o nome das colunas.
+        path: Diretório onde será salvo o arquivo csv.
+        name: Nome do arquivo que será salvo.
+    """
+    
     df_media = pd.DataFrame(lis, columns = cols)
     df_media.to_csv(r''+path+name,index=0)
 
 def compare_score(score1,score2):
+    """
+    Função que compara os valores de True-Score de dois classificadores e 
+    retorna uma pontuação para o sistema Glicko-2.
+    
+    Entrada:
+        score1: Valor de score do primeiro classificador.
+        score2: Valor de score do segundo classificador.
+        
+    Saída: Retorna uma pontuação de 1 para maior, 0 para menor e 0.5 para
+    empate.
+    """
+    
     if score1 > score2:
         return 1
     if score1 < score2:
@@ -67,6 +58,23 @@ def compare_score(score1,score2):
         return 0.5
 
 def calcDif(dict_tmp,dataset):
+    """
+    Função que ordena os valores de dificuldade de um dataset específico e
+    traz os indices dos valores ordenados apenas para instâncias com
+    discriminação positiva.
+    
+    Entrada:
+        dict_tmp: Dicionário com todos os datasets e seus respectivos
+        parâmetros de item.
+        score2: Nome do dataset.
+        
+    Saída:
+        dif_ord: Retorna uma lista com todos as instâncias ordenadas pela
+        dificuldade.
+        listap: Retorna uma lista com os indices das instâncias ordenadas pela
+        dificuldade
+        e com valores de discriminação positivos.
+    """
     
     dis = [i for i in list(dict_tmp[dataset]['Discriminacao']) if i[1] > 0]
     itens = [i[0]-1 for i in dis]
@@ -76,6 +84,16 @@ def calcDif(dict_tmp,dataset):
     return dif_ord,listap
 
 def plotAll(dict_tmp, bins = None, save = False):
+    """
+    Função que chama a função plothist para gerar o histograma de todos os
+    parametros de item de todos os datasets.
+    
+    Entrada:
+        dict_tmp: Dicionário com todos os datasets e seus respectivos
+        parâmetros de item.
+        bins: Int do Número de bins.
+        save: Variavel utilizada para salvar ou não os plots.
+    """
     
     parameters = ['Discriminacao','Dificuldade','Adivinhacao']
     for dataset in list(dict_tmp.keys()):
@@ -85,7 +103,20 @@ def plotAll(dict_tmp, bins = None, save = False):
     if save:
         print('\nTodos os histogramas foram salvos \o/\n')
 
-def plothist(dict_tmp,parameter,dataset,bins = None,save = False,out = out):
+def plothist(dict_tmp,parameter,dataset,bins = None,save = False):
+    """
+    Função que gera histograma de determinado parametro de item de um dataset
+    específico.
+    
+    Entrada:
+        dict_tmp: Dicionário com todos os datasets e seus respectivos
+        parâmetros de item.
+        parameter: String com o parametro de item.
+        dataset: String do nome do dataset.
+        bins: Int com o número de bins.
+        save: Variavel utilizada para salvar ou não os plots.
+    """
+    
     from matplotlib import pyplot as plt
     
     lista = [i[1] for i in dict_tmp[dataset][parameter]]
@@ -108,6 +139,18 @@ def plothist(dict_tmp,parameter,dataset,bins = None,save = False,out = out):
         plt.show()
 
 def freqParam(irt_dict_tmp):
+    """
+    Função que calcula o percentual de instâncias que tem seus parâmetros de
+    item maior que determinados valores limite.
+    
+    Entrada:
+        irt_dict_tmp: Dicionário com todos os datasets e seus respectivos
+        parâmetros de item.
+        
+    Saída: Retorna um dicionário contendo o percentual dos parâmetros de item
+    de cada dataset.
+    """
+
     tmp_dict = copy.deepcopy(irt_dict_tmp)
     for key in list(irt_dict_tmp.keys()):
         countdis = 0
@@ -129,6 +172,18 @@ def freqParam(irt_dict_tmp):
     return tmp_dict
 
 def verificaParametros(irt_dict):
+    """
+    Função que cria um dicionario com todos os parâmetros de item dos datasets
+    separados em chaves e listas.
+    
+    Entrada:
+        irt_dict: Dicionário com todos os datasets e seus respectivos
+        parâmetros de item em array numpy.
+        
+    Saída: Retorna um dicionário contendo ps parâmetros de item devidamente
+    separados por nome e dataset.
+    """
+    
     #lista = list(irt_dict.keys())
     parameters_dict = {}
     
@@ -144,6 +199,15 @@ def verificaParametros(irt_dict):
     return parameters_dict
 
 def printFreq(tmp_dict, save = False):
+    """
+    Função que imprime na tela um ranking dos datasets com base nos percentuais
+    calculados de seus parâmetros de item.
+    
+    Entrada:
+        tmp_dict: Dicionário com todos os datasets e seus respectivos
+        parâmetros de item.
+    """
+    
     dis = []
     dif = []
     ges = []
@@ -179,7 +243,26 @@ def printFreq(tmp_dict, save = False):
             print('-'*60)
         
 
-def thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_theta, bins = None,save = False, out = out):
+def thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_theta, bins = None,save = False):
+    """
+    Função que estima o valor de habilidade (theta) dos classificadores para um
+    dataset específico.
+    
+    Entrada:
+        dict_tmp: Dicionário com todos os datasets e seus respectivos
+        parâmetros de item.
+        irt_dict: Dicionário com todos os datasets e seus respectivos
+        parâmetros de item em array numpy.
+        irt_resp_dict: Array numpy contendo as respostas dos classificadores.
+        dataset: String com o nome do dataset.
+        parameter: String com o parametro de item.
+        list_theta: Lista contendo os valores iniciais de theta (acurácia).
+        bins: Int com o número de bins.
+        
+    Saída: Retorna um dicionário contendo o valor estimado de theta para cada
+    um dos classificadores.
+    """
+    
     from catsim.estimation import HillClimbingEstimator
 
     names = str(list_theta[dataset].keys).split()[6:]
@@ -252,6 +335,21 @@ def thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_thet
         #dict_theta[dataset] = tmp
 
 def thetaAllClfEstimate(dict_tmp, irt_dict, irt_resp_dict, list_theta, param = ['Dificuldade','Discriminacao', 'Adivinhacao'], save = False):
+    """
+    Função que chama o método thetaClfEstimate e estima o valor de (theta) dos 
+    classificadores para todos os datasets.
+    
+    Entrada:
+        dict_tmp: Dicionário com todos os datasets e seus respectivos
+        parâmetros de item.
+        irt_dict: Dicionário com todos os datasets e seus respectivos
+        parâmetros de item em array numpy.
+        irt_resp_dict: Array numpy contendo as respostas dos classificadores.
+        
+    Saída: Retorna um dicionário contendo o valor estimado de theta para cada
+    um dos classificadores para todos os datasets.
+    """
+    
     dict_theta = {}
     for dataset in list(dict_tmp.keys()):
         p = {}
@@ -265,6 +363,18 @@ def thetaAllClfEstimate(dict_tmp, irt_dict, irt_resp_dict, list_theta, param = [
     return dict_theta
         
 def CalcICC(dict_theta,irt_dict):
+    """
+    Função que calcula a probabilidade de acerto de todos os classificadores
+    para todas as instâncias de um dataset.
+    
+    Entrada:
+        dict_tmp: Dicionário com os valores de theta dos classificadores.
+        irt_dict: Dicionário com todos os datasets e seus respectivos
+        parâmetros de item em array numpy.
+        
+    Saída: Retorna um dicionário com o valor da probabilidade de acerto.
+    """
+    
     icc_dict = {}
     for dataset in list(dict_theta.keys()):
         p = {}
@@ -280,6 +390,16 @@ def CalcICC(dict_theta,irt_dict):
     return icc_dict
 
 def calcPro(icc_dict,dict_tmp,dataset,save = False):
+    """
+    Função que calcula a os valores de True-Score para os classificadores para
+    um determinado dataset e gera um gráfico agrupando os classificadores.
+    
+    Entrada:
+        icc_dict: Dicionário com a probabilidade de acerto.
+        dict_tmp: Dicionário com os valores de theta dos classificadores.
+        dataset: String com o nome do dataset.
+    """    
+    
     dif_ord,listap = calcDif(dict_tmp,dataset)
     itens = [i[0]-1 for i in listap]
     score_total = []
@@ -354,6 +474,15 @@ def calcPro(icc_dict,dict_tmp,dataset,save = False):
     #return score_total,score_pos
             
 def calcAllPro(icc_dict,dict_tmp,save = False):
+    """
+    Função que chama a função calcPro e calcula a os valores de True-Score para
+    todos os classificadores para todos os determinado dataset.
+    
+    Entrada:
+        icc_dict: Dicionário com a probabilidade de acerto.
+        dict_tmp: Dicionário com os valores de theta dos classificadores.
+    """
+    
     datasets = list(icc_dict.keys())
     
     for dataset in datasets:
@@ -362,7 +491,19 @@ def calcAllPro(icc_dict,dict_tmp,save = False):
     if save:
         print('\nOs scores dos classificadores para todos os datasets foram salvos \o/\n')
     
-def plotCCC(icc_dict,dict_tmp,dataset,parameter,save = False,out = out):
+def plotCCC(icc_dict,dict_tmp,dataset,parameter,save = False):
+    """
+    Função que gera as Curvas Características de Classificador (CCC) com base
+    no trabalho de Martínez-Plumed et al. (2016) para um determinado dataset e
+    um dado parametro de item.
+    
+    Entrada:
+        icc_dict: Dicionário com a probabilidade de acerto.
+        dict_tmp: Dicionário com os valores de theta dos classificadores.
+        dataset: String com o nome do dataset.
+        parameter: String com o parametro de item.
+    """
+    
     from matplotlib import pyplot as plt
     
     listap = []
@@ -407,7 +548,14 @@ def plotCCC(icc_dict,dict_tmp,dataset,parameter,save = False,out = out):
         plt.show()
 
 def plotAllCCC(icc_dict,dict_tmp,save = False):
-  
+    """
+    Função que chama o metódo plotCCC e gera as CCC's para todos os datasets e 
+    parâmetros de item.
+    
+    Entrada:
+        icc_dict: Dicionário com a probabilidade de acerto.
+        dict_tmp: Dicionário com os valores de theta dos classificadores.
+    """
     
     for dataset in list(icc_dict.keys()):
         for parameter in list(icc_dict[dataset].keys()):
@@ -416,60 +564,98 @@ def plotAllCCC(icc_dict,dict_tmp,save = False):
     if save:
         print('\nTodos as CCCs foram salvas \o/\n')
 
-
-#Proficiencia inicial de cada metodo
-list_theta = {}      
-#Lista todos os diretorios de datasets da pasta output
-list_dir = os.listdir(os.getcwd()+out)
-#Pega todos os arquivos contendo os valores para o IRT
-irt_dict = {}
-irt_resp_dict = {}
-for path in list_dir:
+if __name__ == '__main__':
     
-    theta = pd.read_csv(os.getcwd()+out+'/'+path+'/'+path+'_final.csv',index_col=0)
-    list_theta[path] = theta
-    irt_parameters = pd.read_csv(os.getcwd()+out+'/'+path+'/irt_item_param.csv',index_col=0).to_numpy()
-    res_vector = pd.read_csv(os.getcwd()+out+'/'+path+'/'+path+'.csv').to_numpy()
-    col = np.ones((len(irt_parameters), 1))    
-    new_irt = np.append(irt_parameters, col, axis = 1)
-    irt_dict[path] = new_irt
-    irt_resp_dict[path] = res_vector
-
-dict_tmp = verificaParametros(irt_dict)
-tmp_freq = freqParam(dict_tmp)
-printFreq(tmp_freq,save = arguments.save)
-
-if arguments.plotDataHist != None:
-    dataset,parameter = arguments.plotDataHist.split(',')
-    plothist(dict_tmp,parameter,dataset,bins = arguments.bins,save = arguments.save)
+    parser = argparse.ArgumentParser(description = 'Ferramenta para analise dos datasets via TRI')
     
-if arguments.plotAllHist:
-    plotAll(dict_tmp, bins = arguments.bins, save = arguments.save)
+    parser.add_argument('-dir', action = 'store', dest = 'dir',
+                        default = 'output', required = False,
+                        help = 'Nome do diretório onde estão as pastas dos datasets (Ex: output)')
+    parser.add_argument('-limit_dif', action = 'store', dest = 'limit_dif', required = False, type=float,
+                        default = 1,help = 'Valor minimo para um item ser dificil (Ex: 1)')
+    parser.add_argument('-limit_dis', action = 'store', dest = 'limit_dis', required = False, type=float,
+                        default = 0.75,help = 'Valor minimo para um item ser discriminativo (Ex: 0.75)')
+    parser.add_argument('-limit_adv', action = 'store', dest = 'limit_adv', required = False, type=float,
+                        default = 0.2,help = 'Valor minimo para um item ser de facil adivinhacao (Ex: 0.2)')
+    parser.add_argument('-plotDataHist', action = 'store', dest = 'plotDataHist', required = False, 
+                        help = 'Plota o histograma de um parametro de um dataset (Ex: nome_dataset,Dificuldade)')
+    parser.add_argument('-plotAllHist', action = 'store_true', dest = 'plotAllHist', required = False,
+                        default = False, help = 'Plota todos os histogramas de cada dataset')
+    parser.add_argument('-bins', action = 'store', dest = 'bins', required = False, type=int,
+                        help = 'Define o numero de bins do(s) histograma(s) gerados (Ex: 10)')
+    parser.add_argument('-plotDataCCC', action = 'store', dest = 'plotDataCCC', required = False, 
+                        help = 'Plota as CCCs de um parametro de um dataset (Ex: nome_dataset,Dificuldade)')
+    parser.add_argument('-plotAllCCC', action = 'store_true', dest = 'plotAllCCC', required = False,
+                        default = False, help = 'Plota todos as CCCs de cada dataset')
+    parser.add_argument('-scoreData', action = 'store', dest = 'scoreData', required = False, 
+                        help = 'Calcula o score de todos os classificadores para um dataset (Ex: nome_dataset)')
+    parser.add_argument('-scoreAll', action = 'store_true', dest = 'scoreAll', required = False,
+                        default = False, help = 'Calcula o score de todos os classificadores para todos os datasets')
+    parser.add_argument('-save', action = 'store_true', dest = 'save', required = False,
+                        default = False, help = 'Salva os graficos mostrados na tela')
     
-if arguments.plotDataCCC != None:
-    dataset,parameter = arguments.plotDataCCC.split(',')
-    dict_theta = {}
-    p = {}
-    p[parameter] = thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_theta,save = arguments.save)
-    dict_theta[dataset] = p
-    icc_dict = CalcICC(dict_theta,irt_dict)
-    plotCCC(icc_dict,dict_tmp,dataset,parameter,save = arguments.save)
+    arguments = parser.parse_args()
     
-if arguments.plotAllCCC:
-    dict_theta = thetaAllClfEstimate(dict_tmp,irt_dict,irt_resp_dict,list_theta,save = arguments.save)
-    icc_dict = CalcICC(dict_theta,irt_dict)
-    plotAllCCC(icc_dict,dict_tmp,save = arguments.save)
-
-if arguments.scoreData != None:
-    dataset = arguments.scoreData
-    dict_theta = {}
-    p = {}
-    p['Dificuldade'] = thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,'Dificuldade',list_theta,save = arguments.save)
-    dict_theta[dataset] = p
-    icc_dict = CalcICC(dict_theta,irt_dict)
-    calcPro(icc_dict,dict_tmp,dataset,save = arguments.save)
     
-if arguments.scoreAll:
-    dict_theta = thetaAllClfEstimate(dict_tmp,irt_dict,irt_resp_dict,list_theta,param = ['Dificuldade'],save = arguments.save)
-    icc_dict = CalcICC(dict_theta,irt_dict)
-    calcAllPro(icc_dict,dict_tmp,save = arguments.save)
+    out  = '/'+arguments.dir
+    limit_dif = arguments.limit_dif
+    limit_dis = arguments.limit_dis
+    limit_adv = arguments.limit_adv
+    
+    
+    #Proficiencia inicial de cada metodo
+    list_theta = {}      
+    #Lista todos os diretorios de datasets da pasta output
+    list_dir = os.listdir(os.getcwd()+out)
+    #Pega todos os arquivos contendo os valores para o IRT
+    irt_dict = {}
+    irt_resp_dict = {}
+    for path in list_dir:
+        
+        theta = pd.read_csv(os.getcwd()+out+'/'+path+'/'+path+'_final.csv',index_col=0)
+        list_theta[path] = theta
+        irt_parameters = pd.read_csv(os.getcwd()+out+'/'+path+'/irt_item_param.csv',index_col=0).to_numpy()
+        res_vector = pd.read_csv(os.getcwd()+out+'/'+path+'/'+path+'.csv').to_numpy()
+        col = np.ones((len(irt_parameters), 1))    
+        new_irt = np.append(irt_parameters, col, axis = 1)
+        irt_dict[path] = new_irt
+        irt_resp_dict[path] = res_vector
+    
+    dict_tmp = verificaParametros(irt_dict)
+    tmp_freq = freqParam(dict_tmp)
+    printFreq(tmp_freq,save = arguments.save)
+    
+    if arguments.plotDataHist != None:
+        dataset,parameter = arguments.plotDataHist.split(',')
+        plothist(dict_tmp,parameter,dataset,bins = arguments.bins,save = arguments.save)
+        
+    if arguments.plotAllHist:
+        plotAll(dict_tmp, bins = arguments.bins, save = arguments.save)
+        
+    if arguments.plotDataCCC != None:
+        dataset,parameter = arguments.plotDataCCC.split(',')
+        dict_theta = {}
+        p = {}
+        p[parameter] = thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_theta,save = arguments.save)
+        dict_theta[dataset] = p
+        icc_dict = CalcICC(dict_theta,irt_dict)
+        plotCCC(icc_dict,dict_tmp,dataset,parameter,save = arguments.save)
+        
+    if arguments.plotAllCCC:
+        dict_theta = thetaAllClfEstimate(dict_tmp,irt_dict,irt_resp_dict,list_theta,save = arguments.save)
+        icc_dict = CalcICC(dict_theta,irt_dict)
+        plotAllCCC(icc_dict,dict_tmp,save = arguments.save)
+    
+    if arguments.scoreData != None:
+        dataset = arguments.scoreData
+        dict_theta = {}
+        p = {}
+        p['Dificuldade'] = thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,'Dificuldade',list_theta,save = arguments.save)
+        dict_theta[dataset] = p
+        icc_dict = CalcICC(dict_theta,irt_dict)
+        calcPro(icc_dict,dict_tmp,dataset,save = arguments.save)
+        
+    if arguments.scoreAll:
+        dict_theta = thetaAllClfEstimate(dict_tmp,irt_dict,irt_resp_dict,list_theta,param = ['Dificuldade'],save = arguments.save)
+        icc_dict = CalcICC(dict_theta,irt_dict)
+        calcAllPro(icc_dict,dict_tmp,save = arguments.save)

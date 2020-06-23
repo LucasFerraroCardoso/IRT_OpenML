@@ -3,9 +3,15 @@
 Created on Sat Oct 26 18:20:49 2019
 
 @author: Lucas
+
+Segundo script da ferramenta decodIRT. O objetivo desse script é calcular os
+parâmetros de item para os datasets utilizados no primeiro script.
+
+Link do código-fonte: https://github.com/LucasFerraroCardoso/IRT_OpenML
 """
 
 import os
+import csv
 import argparse
 import pandas as pd
 import rpy2.robjects.packages as rpackages
@@ -21,6 +27,7 @@ def normalize(lista,vmin,vmax):
     return tmp
 
 def insertMongo(dici,mongoClient,namedata):
+    
     from pymongo import MongoClient
 
     class Connect(object):
@@ -85,9 +92,16 @@ list_dir = os.listdir(os.getcwd()+out)
 #Pega todos os arquivos contendo os valores para o IRT
 list_data_irt = []
 for path in list_dir:
-    for tmp in os.listdir(os.getcwd()+out+'/'+path):
-        if '_irt' in tmp:
-            list_data_irt.append(tmp)
+#    if os.path.exists(os.getcwd()+out+'/'+path+'/'+path+'_irt.csv'):
+    try:
+        read = csv.reader( open(os.getcwd()+out+'/'+path+'/'+path+'_irt.csv', "r"))
+        list_data_irt.append(path+'_irt.csv')
+    except IOError:
+        print('Nao foi encontrado o arquivo para calculo do irt do dataset ',path)
+#    for tmp in os.listdir(os.getcwd()+out+'/'+path):
+#        if path+'_irt.csv' in tmp:
+#            list_data_irt.append(tmp)
+        
 
 #file = ('heart-statlog_irt.csv')
 #data = robjects.r('PL3.rasch<-tpm(read.csv(file="heart-statlog_irt.csv"))')
