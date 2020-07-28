@@ -6,13 +6,11 @@ Here you can find all the files and supplementary materials for the paper "Decod
 **clf_rating.csv**: File containing the classifier ranting ranking that is shown in Table 1 of the paper.  
 **Real_clf_nemenyi.csv:** P-value matrix resulting from the Nemenyi calculation for the real classifiers.  
 **IRT_param_freq.txt**: File that shows the percentages of difficult, discriminating and easy-to-guess instances for all datasets.  
-**modelosML.txt**: File that lists all hyperparameters used in ML models that were analyzed in the paper.  
-**Fluxograma.png**: Flowchart of the decodIRT execution, shown in Figure 1 of the paper.  
-**graph_percIRT.png**: Image of the graph that compares the percentages of difficult and discriminating instances of the datasets, shown in Figure 2 of the paper.  
-**jm1_score.png**: Image of the comparison chart between the True-Score obtained by the classifiers in the "jm1" dataset, shown in Figure 3 of the paper.  
+**modelosML.txt**: File that lists all hyperparameters used in ML models that were analyzed in the paper.
+**graph_percIRT.png**: Image of the graph that compares the percentages of difficult and discriminating instances of the datasets, shown in Figure 2 of the paper.
 **heatmap_realclf.png**: Image of the heapmap used to analyze the results of the Nemenyi test, shown in Figure 4 of the paper.  
 
-### Output
+### Benchmarking
 - This folder contains all the results generated for each dataset after the execution of each of the three scripts. All results are divided into folders named after each dataset. Each folder contains the following files:
 
 	- Results of the decodIRT_OtML script:  
@@ -33,12 +31,12 @@ Here you can find all the files and supplementary materials for the paper "Decod
 	     **dataset_name_score.png**: Image of the comparison chart between the True-Score obtained by the real and artificial classifiers in the dataset.  
 
 ### Scripts
-- This folder contains all the scripts used to generate the results presented in the paper.
+- All the scripts used to generate the results presented in the paper.
 
 	- decodIRT:  
 	    **decodIRT_OtML.py**  
-	     **decodIRT_MLtIRT.py**  
-	     **decodIRT_analysis.py**  
+	    **decodIRT_MLtIRT.py**  
+	    **decodIRT_analysis.py**  
 
 	- Other Scripts:  
 	     **clf_rating_nemenyi.py**: Script created to calculate the rating of the classifiers using the Glicko-2 system and to perform the Friedman and Nemenyi Tests.  
