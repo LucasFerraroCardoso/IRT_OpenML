@@ -2,7 +2,7 @@
 
 A IRT application using OpenML database. The objective is to perform the complexity analysis of binary datasets, automatically downloaded from the OpenML platform, and also to compare the performance of several supervised learning algorithms, relating their performances to the instances of the datasets. For this we used the calculation of the IRT item parameters as well as the calculation of the probability of correctness of each classifier for each test instance of a given dataset.
 
-This tool was presented on the paper "Decoding machine learning benchmarks" published at the BRACIS'2020 conference. For more details on the results and supplementary paper material, access the BRACIS folder.
+This tool was presented on the paper **"Decoding machine learning benchmarks"** published at the BRACIS'2020 conference. For more details on the results and supplementary paper material, access the BRACIS folder.
 
 ## How to use
 
