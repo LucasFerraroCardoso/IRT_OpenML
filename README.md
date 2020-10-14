@@ -116,9 +116,9 @@ And finally, using your OpenML apikey. A study can be published with the new ben
 ```python
 from decodIRT_create_benchmark import publishStudy
 
-openml_apikey = 'yourapikey'
+openml_apikey = 'yourapikey' #Apikey can be found on your OpenML profile page
 
-study_id = publishStudy(benchmark,text,perc,openml_apikey,'New benchmark name')
+study_id = publishStudy(benchmark,text,perc,openml_apikey,'New benchmark name') #This function will publish the study and return the ID
 ```
 
 ## Author's Note
