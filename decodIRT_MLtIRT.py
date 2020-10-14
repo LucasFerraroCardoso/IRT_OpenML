@@ -19,10 +19,12 @@ import rpy2.robjects as robjects
 from rpy2.robjects.vectors import StrVector
 from rpy2.robjects import pandas2ri
 
-def normalize(lista,vmin,vmax):
+def normalize(lista, min_range, max_range):
+    vmin = min(lista)
+    vmax = max(lista)
     tmp = []
     for i in lista:
-        norm = (i - vmin)/(vmax - vmin)
+        norm = (max_range - min_range)*((i - vmin)/(vmax - vmin)) + min_range
         tmp.append(norm)    
     return tmp
 
@@ -54,18 +56,7 @@ def insertMongo(dici,mongoClient,namedata):
 #                tmp[key] = value
     db.inventory.insert_one(tmp)
 
-if __name__ == '__main__':
-
-    parser = argparse.ArgumentParser(description = 'Ferramenta para gerar os parâmetros do TRI')
-    
-    parser.add_argument('-dir', action = 'store', dest = 'dir',
-                        default = 'output', required = False,
-                        help = 'Nome do diretório onde estão as pastas dos datasets (Ex: output)')
-    parser.add_argument('-url', action = 'store', dest = 'url', required = False,
-                        help = 'URL do cluster no MongoDB, com usuario e senha (Ex: mongodb+srv://Usuario:senha@nomedocluster)')
-    
-    arguments = parser.parse_args()
-    
+def main(arg_dir = 'output',arg_url = None):    
     #mongoClient = arguments.url
     
     #Importa o pacote utils do R para instalar e importar pacotes R
@@ -87,7 +78,7 @@ if __name__ == '__main__':
     pandas2ri.activate()
     
     
-    out = '/'+arguments.dir
+    out = '/'+arg_dir
     #Lista todos os diretorios de datasets da pasta output
     list_dir = os.listdir(os.getcwd()+out)
     
@@ -139,19 +130,48 @@ if __name__ == '__main__':
             item = par[i].split()[0]
             tmp_dict = {}
             for p in range(3):
-                tmp_dict[parameters[p]] = par[i].split()[3-p]
+                tmp_dict[parameters[p]] = float(par[i].split()[3-p])
             parameter_dict[item] = tmp_dict
+            
+            list_dis = []
+            list_dif = []
+            list_adv = []
+            for i in parameter_dict:
+                list_dis.append(parameter_dict[i]['Discriminacao'])
+                list_dif.append(parameter_dict[i]['Dificuldade'])
+                list_adv.append(parameter_dict[i]['Adivinhacao'])
+        
+#        normalized_dis = normalize(list_dis,-4,4)
+#        normalized_dif = normalize(list_dif,-4,4)
+#        c = 0
+#        for i in parameter_dict:
+#            parameter_dict[i]['Discriminacao'] = normalized_dis[c]
+#            parameter_dict[i]['Dificuldade'] = normalized_dif[c]
+#            c += 1
     
         dataframe = pd.DataFrame.from_dict(parameter_dict)
         dataframe = dataframe.reindex(index = parameters)
-        
+        #break
         #Salva os parametros do IRT na pasta de cada dataset
         dataframe.transpose().to_csv(r''+os.getcwd()+out+'/'+list_dir[f]+'/irt_item_param.csv')
         
         #Insere os dados do IRT no MongoDB
-        if arguments.url != None:
+        if arg_url != None:
             try:
-                insertMongo(parameter_dict,arguments.url,list_dir[f])
+                insertMongo(parameter_dict,arg_url,list_dir[f])
                 print('==> Dados salvos com sucesso :)\n')
             except:
                 print("Não foi possivel inserir os dados no MongoDB :/ \nVerifique se a url passada do banco está correta, assim como nome e senha\n")
+
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(description = 'Ferramenta para gerar os parâmetros do TRI')
+    
+    parser.add_argument('-dir', action = 'store', dest = 'dir',
+                        default = 'output', required = False,
+                        help = 'Nome do diretório onde estão as pastas dos datasets (Ex: output)')
+    parser.add_argument('-url', action = 'store', dest = 'url', required = False,
+                        help = 'URL do cluster no MongoDB, com usuario e senha (Ex: mongodb+srv://Usuario:senha@nomedocluster)')
+    
+    arguments = parser.parse_args()
+    main(arguments.dir,arguments.url)

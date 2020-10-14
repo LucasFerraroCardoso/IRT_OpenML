@@ -66,39 +66,27 @@ def saveFile(lis,cols,path,name):
     df_media = pd.DataFrame(lis, columns = cols)
     df_media.to_csv(r''+path+name,index=0)
 
-if __name__ == '__main__':
-
-    parser = argparse.ArgumentParser(description = 'Ferramenta para baixar datasets do OpenML e gerar as respostas via AM')
-    
-    parser.add_argument('-data', action = 'store', dest = 'data',
-                        default = 'datasets.csv', required = False,
-                        help = 'Lista de Id dos datasets do OpenML. Pode ser um arquivo (Ex: dataset.csv) ou pode ser uma lista (Ex: 53,721...)')
-    parser.add_argument('-output', action = 'store', dest = 'output', required = False,
-                        default = 'output',help = 'Endereço de saida dos dados. Default = output, nesse diretório serao salvos todos os arquivos gerados.')
-    
-    arguments = parser.parse_args()
-    
-    
+def main(arg_data,arg_output = 'output'):
     #Cria a pasta cache para salvar os dados do OpenML
     openml.config.cache_directory = os.path.expanduser(os.getcwd()+'/cache')
     
     #Cria o diretoria de saida caso nao exista
-    out = arguments.output
+    out = arg_output
     if not os.path.exists(out):
         os.mkdir(out)
         print("Diretorio " , out ,  " criado\n")
     
     listDid = []
-    if 'csv' in arguments.data:
+    if 'csv' in str(arg_data[0]).split('.'):
         try:
-            read = csv.reader( open(arguments.data, "r"))
+            read = csv.reader( open(arg_data[0], "r"))
             for row in read :
                 for i in row:
                     listDid.append(int(i))
         except IOError:
             print('Arquivo datasets.csv não encontrado. Crie ou passe os IDs como uma lista.')
     else:
-        listDid = arguments.data.split(',')
+        listDid = arg_data
     
     print('Id\'s dos datasets a serem baixados : ',listDid)
     print("Acessando o OpenML e baixando os datasets\n")
@@ -133,10 +121,10 @@ if __name__ == '__main__':
             split = float('%g' % (500/len(y)))
         
         #Split estratificado
-        X_train, X_test, y_train_label, y_test_label = train_test_split(X, y,
-                                                        stratify=y, 
-                                                        test_size=split)
-    
+        try:
+            X_train, X_test, y_train_label, y_test_label = train_test_split(X, y,stratify=y,test_size=split)
+        except:
+            X_train, X_test, y_train_label, y_test_label = train_test_split(X, y,random_state=42,test_size=split)
         #Quantidade de folds para treino
         cv = KFold(n_splits=5, random_state=42, shuffle=False)
         
@@ -311,3 +299,16 @@ if __name__ == '__main__':
         print("Tempo de execucao do dataset:\n",dataset)
         print("Tempo: ",lista_tempo[i],"segundos")
         print('-'*60)
+
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(description = 'Ferramenta para baixar datasets do OpenML e gerar as respostas via AM')
+    
+    parser.add_argument('-data', action = 'store', dest = 'data',
+                        default = 'datasets.csv', required = False,
+                        help = 'Lista de Id dos datasets do OpenML. Pode ser um arquivo (Ex: dataset.csv) ou pode ser uma lista (Ex: 53,721...)')
+    parser.add_argument('-output', action = 'store', dest = 'output', required = False,
+                        default = 'output',help = 'Endereço de saida dos dados. Default = output, nesse diretório serao salvos todos os arquivos gerados.')
+    
+    arguments = parser.parse_args()
+    main(arguments.data.split(),arguments.output)
