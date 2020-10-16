@@ -113,7 +113,7 @@ def publishStudy(benchmark,text,perc,openml_apikey,name = 'Benchmark'):
     
     return study_id
 
-def analyseBenchmarkDataId(tasks,perc,param,limit_dif,limit_dis,limit_ges,out = '/output'):
+def analyseBenchmarkDataId(tasks,perc,param,limit_dif=1.0,limit_dis=0.75,limit_ges=0.2,out = '/output'):
     """
     Função que cria um benchmark a partir das Tasks do OpenML. A funcao ira
     encontrar o dataset de cada Task e gerar uma lista de IDs de datasets.
@@ -134,7 +134,7 @@ def analyseBenchmarkDataId(tasks,perc,param,limit_dif,limit_dis,limit_ges,out = 
     list_Data_id = sorted(set(list_Data_id))
     return analyseBenchmark(list_Data_id,perc,param,limit_dif,limit_dis,limit_ges,out)
 
-def analyseBenchmarkStudy(study_id,perc,param,limit_dif,limit_dis,limit_ges,out = '/output'):
+def analyseBenchmarkStudy(study_id,perc,param,limit_dif=1.0,limit_dis=0.75,limit_ges=0.2,out = '/output'):
     """
     Função que cria um benchmark a partir de um Study do OpenmL.
     
