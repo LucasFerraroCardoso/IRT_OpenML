@@ -185,7 +185,7 @@ def analyseBenchmark(list_Data_id,perc,param,limit_dif,limit_dis,limit_ges,out =
         irt_dict[path] = new_irt
     
     dict_tmp = decodIRT_analysis.verificaParametros(irt_dict)
-    tmp_freq = decodIRT_analysis.freqParam(dict_tmp,limit_dis,limit_dif,limit_ges)
+    tmp_freq = decodIRT_analysis.freqParam(dict_tmp,limit_dif,limit_dis,limit_ges)
     
     benchmark,text = splitBenchmark(tmp_freq,perc,param)
     
