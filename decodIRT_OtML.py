@@ -126,7 +126,7 @@ def main(arg_data,arg_output = 'output'):
         except:
             X_train, X_test, y_train_label, y_test_label = train_test_split(X, y,random_state=42,test_size=split)
         #Quantidade de folds para treino
-        cv = KFold(n_splits=10, random_state=42, shuffle=False)
+        cv = KFold(n_splits=10, random_state=42, shuffle=True)
         
         #Listas de media de treinamento, acuracia final e vetor com as respostas
         mlp_media =[]
@@ -260,8 +260,8 @@ def main(arg_data,arg_output = 'output'):
         
         name_tmp = dataset.name.replace('-','_')
         #Cria a pasta para o dataset individualmente
-        if not os.path.exists('output/'+dataset.name):
-            os.mkdir('output/'+dataset.name)
+        if not os.path.exists(arg_output+'/'+dataset.name):
+            os.mkdir(arg_output+'/'+dataset.name)
             print("Diretorio " , dataset.name ,  " criado\n")
         
         pathway = ''+os.getcwd()+'/'+out+'/'+dataset.name+'/'
