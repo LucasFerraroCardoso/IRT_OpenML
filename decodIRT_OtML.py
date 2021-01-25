@@ -225,7 +225,7 @@ def main(arg_data,arg_dataset,arg_output = 'output'):
                RandomForestClassifier(),SVC(),MLPClassifier()]
         
         #Quantidade de folds para treino
-        cv = KFold(n_splits=10, random_state=42, shuffle=False)
+        cv = KFold(n_splits=10, random_state=42, shuffle=True)
         
         for clf in list_clf:
             list_accur = []
