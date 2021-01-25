@@ -33,6 +33,45 @@ from sklearn.model_selection import train_test_split
 
 warnings.filterwarnings("ignore")
 
+def encodeData(arg_dataset):
+    """
+    Função que converte datasets nominais para numericos
+    
+    Entrada:
+        arg_dataset: Nome do arquivo contendo o dataset local.
+        
+    Saída:
+        dataset: Matriz array numpy do dataset com todos os valores numericos.
+        y: Array numpy com classes convertidas para numero.
+    """
+    data = pd.read_csv(arg_dataset)
+    features = list(data.columns)
+    dataset = np.array([])
+    #meta_d = np.array([])
+    #dataset = []
+    for f in range(len(features)-1):
+        
+        if data[features[f]].dtypes == np.object:
+            if len(dataset) == 0:
+                num_data, meta_data = pd.factorize(list(data[features[f]]))
+                dataset = np.array(num_data)
+                #meta_d = meta_data
+            else:
+                num_data, meta_data = pd.factorize(list(data[features[f]]))
+                dataset = np.vstack((dataset,num_data))
+                #meta_d = np.append(meta_d,[meta_data],axis=0)
+        else:
+            if len(dataset) == 0:
+                dataset = np.array(list(data[features[f]]))
+            else:
+                dataset = np.vstack((dataset,list(data[features[f]])))
+    
+    dataset = dataset.transpose()
+    #meta_d = meta_d.transpose()
+    y, target = pd.factorize(list(data[features[-1]]))
+    
+    return dataset, y
+
 def compare(original, res):
     """
     Função que compara as repostas de um modelo de ML com as classes originais.
@@ -66,37 +105,42 @@ def saveFile(lis,cols,path,name):
     df_media = pd.DataFrame(lis, columns = cols)
     df_media.to_csv(r''+path+name,index=0)
 
-def main(arg_data,arg_output = 'output'):
-    #Cria a pasta cache para salvar os dados do OpenML
-    openml.config.cache_directory = os.path.expanduser(os.getcwd()+'/cache')
+def main(arg_data,arg_dataset,arg_output = 'output'):
     
-    #Cria o diretoria de saida caso nao exista
-    out = arg_output
-    if not os.path.exists(out):
-        os.mkdir(out)
-        print("Diretorio " , out ,  " criado\n")
+    if not arg_dataset:
+        #Cria a pasta cache para salvar os dados do OpenML
+        openml.config.cache_directory = os.path.expanduser(os.getcwd()+'/cache')
+        
+        #Cria o diretoria de saida caso nao exista
+        out = arg_output
+        if not os.path.exists(out):
+            os.mkdir(out)
+            print("Diretorio " , out ,  " criado\n")
+        
+        listDid = []
+        if 'csv' in str(arg_data[0]).split('.'):
+            try:
+                read = csv.reader( open(arg_data[0], "r"))
+                for row in read :
+                    for i in row:
+                        listDid.append(int(i))
+            except IOError:
+                print('Arquivo datasets.csv não encontrado. Crie ou passe os IDs como uma lista.')
+        else:
+            listDid = arg_data
     
-    listDid = []
-    if 'csv' in str(arg_data[0]).split('.'):
-        try:
-            read = csv.reader( open(arg_data[0], "r"))
-            for row in read :
-                for i in row:
-                    listDid.append(int(i))
-        except IOError:
-            print('Arquivo datasets.csv não encontrado. Crie ou passe os IDs como uma lista.')
+        print('Id\'s dos datasets a serem baixados : ',listDid)
+        print("Acessando o OpenML e baixando os datasets\n")
+   
+        datasetlist = []
+        for i in tqdm(range(len(listDid))):
+            openml.datasets.get_dataset(listDid[i])
+            #datasetlist.append(dataset)
+            gc.collect()
     else:
-        listDid = arg_data
+        listDid = [1]
     
-    print('Id\'s dos datasets a serem baixados : ',listDid)
-    print("Acessando o OpenML e baixando os datasets\n")
-    datasetlist = []
-    for i in tqdm(range(len(listDid))):
-        openml.datasets.get_dataset(listDid[i])
-        #datasetlist.append(dataset)
-        gc.collect()
-    
-    #dataset = openml.datasets.get_dataset(53)
+    #dataset = openml.datasets.get_dataset(31)
     #Cria lista de tempos
     lista_tempo = []
     
@@ -104,12 +148,15 @@ def main(arg_data,arg_output = 'output'):
     for d in listDid:
         inicio = time.time() #inicia a contagem do tempo de execução
         
-        dataset = openml.datasets.get_dataset(d)
-        print("Dataset: '%s' \n" %(dataset.name))
-    
-        X, y, categorical_indicator, attribute_names = dataset.get_data(
-            dataset_format='array',
-            target=dataset.default_target_attribute)
+        if not arg_dataset:
+            dataset = openml.datasets.get_dataset(d)
+            print("Dataset: '%s' \n" %(dataset.name))
+        
+            X, y, categorical_indicator, attribute_names = dataset.get_data(
+                dataset_format='array',
+                target=dataset.default_target_attribute)
+        else:
+            X, y = encodeData(arg_dataset)
         
         #Verifica se existe valores faltosos, se existir substitui por zero
         if len(np.where(np.isnan(X))[0]) > 0:
@@ -178,7 +225,7 @@ def main(arg_data,arg_output = 'output'):
                RandomForestClassifier(),SVC(),MLPClassifier()]
         
         #Quantidade de folds para treino
-        cv = KFold(n_splits=10, random_state=42, shuffle=True)
+        cv = KFold(n_splits=10, random_state=42, shuffle=False)
         
         for clf in list_clf:
             list_accur = []
@@ -222,12 +269,20 @@ def main(arg_data,arg_output = 'output'):
         #Adcionando calssificador majoritario e minoritario
         major = []
         minor = []
-        for classe in elementos:
-            if list(y).count(classe) == dataset.qualities['MajorityClassSize']:
-                major = [classe for i in range(len(y_test_label))]
-            if list(y).count(classe) == dataset.qualities['MinorityClassSize']:
-                minor = [classe for i in range(len(y_test_label))]
-                
+        if not arg_dataset:
+            for classe in elementos:
+                if list(y).count(classe) == dataset.qualities['MajorityClassSize']:
+                    major = [classe for i in range(len(y_test_label))]
+                if list(y).count(classe) == dataset.qualities['MinorityClassSize']:
+                    minor = [classe for i in range(len(y_test_label))]
+        else:
+            target = list(set(y))
+            tmp_target = []
+            y_tmp = list(y)
+            for tar in target:
+                tmp_target.append((y_tmp.count(tar),tar))
+            major = [max(tmp_target)[1] for i in range(len(y_test_label))]
+            minor = [min(tmp_target)[1] for i in range(len(y_test_label))]
         # if list(y).count(0) == dataset.qualities['MajorityClassSize']:
         #     major = [0 for i in range(len(y_test_label))]
         #     minor = [1 for i in range(len(y_test_label))]
@@ -258,23 +313,27 @@ def main(arg_data,arg_output = 'output'):
         
         item_name = ['V'+str(i+1) for i in range(len(y_test_label))]
         
-        name_tmp = dataset.name.replace('-','_')
+        name_tmp = ''
+        if not arg_dataset: 
+            name_tmp = dataset.name
+        else:
+            name_tmp = arg_dataset[:-4]
         #Cria a pasta para o dataset individualmente
-        if not os.path.exists(arg_output+'/'+dataset.name):
-            os.mkdir(arg_output+'/'+dataset.name)
-            print("Diretorio " , dataset.name ,  " criado\n")
+        if not os.path.exists(arg_output+'/'+name_tmp):
+            os.mkdir(arg_output+'/'+name_tmp)
+            print("Diretorio " , name_tmp ,  " criado\n")
         
-        pathway = ''+os.getcwd()+'/'+out+'/'+dataset.name+'/'
+        pathway = ''+os.getcwd()+'/'+out+'/'+name_tmp+'/'
         #Salvando itens usados para o teste
-        saveFile(list(zip(X_test,y_test_label)),['Item','Classe'],pathway,dataset.name+'_test.csv')
+        saveFile(list(zip(X_test,y_test_label)),['Item','Classe'],pathway,name_tmp+'_test.csv')
         #Cria o arquivo contendo as repostas dos metodos de ML para gerar os parametros do IRT
-        saveFile(mlp_resp,item_name,pathway,dataset.name+'_irt.csv')
+        saveFile(mlp_resp,item_name,pathway,name_tmp+'_irt.csv')
         #Cria o aquivo contendo as repostas dos metodos de ML que serão avaliados
-        saveFile(lista_resp,item_name,pathway,dataset.name+'.csv')
+        saveFile(lista_resp,item_name,pathway,name_tmp+'.csv')
         
         df = pd.DataFrame(mlp_score)
-        df.to_csv(r''+os.getcwd()+'/'+out+'/'+dataset.name+'/'+dataset.name+'_mlp.csv',index=0)
-        saveFile(mlp_score,None,pathway,dataset.name+'_mlp.csv')
+        df.to_csv(r''+os.getcwd()+'/'+out+'/'+name_tmp+'/'+name_tmp+'_mlp.csv',index=0)
+        saveFile(mlp_score,None,pathway,name_tmp+'_mlp.csv')
         
         list_algML = ['GaussianNB','BernoulliNB','KNeighborsClassifier(2)','KNeighborsClassifier(3)',
                'KNeighborsClassifier(5)','KNeighborsClassifier(8)','DecisionTreeClassifier()',
@@ -285,9 +344,9 @@ def main(arg_data,arg_output = 'output'):
         
         #Salva o csv contendo a media dos metodos durante o k-fold
         cols = ['Metodo','Acuracia']
-        saveFile(list(zip(list_algML,lista_media)),cols,pathway,dataset.name+'_acuracia.csv')
+        saveFile(list(zip(list_algML,lista_media)),cols,pathway,name_tmp+'_acuracia.csv')
         #Salva o irt contendo a acuracia final
-        saveFile(list(zip(list_algML,resp_final)),cols,pathway,dataset.name+'_final.csv')
+        saveFile(list(zip(list_algML,resp_final)),cols,pathway,name_tmp+'_final.csv')
         
         
         fim = time.time()
@@ -295,7 +354,10 @@ def main(arg_data,arg_output = 'output'):
         lista_tempo.append(tempo)
     
     for i in range(len(listDid)):
-        dataset = openml.datasets.get_dataset(listDid[i])
+        if not arg_dataset:
+            dataset = openml.datasets.get_dataset(listDid[i])
+        else:
+            dataset = arg_dataset
         print("Tempo de execucao do dataset:\n",dataset)
         print("Tempo: ",lista_tempo[i],"segundos")
         print('-'*60)
@@ -304,11 +366,14 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description = 'Ferramenta para baixar datasets do OpenML e gerar as respostas via AM')
     
-    parser.add_argument('-data', action = 'store', dest = 'data',
+    parser.add_argument('-OpenID', action = 'store', dest = 'OpenID',
                         default = 'datasets.csv', required = False,
                         help = 'Lista de Id dos datasets do OpenML. Pode ser um arquivo (Ex: dataset.csv) ou pode ser uma lista (Ex: 53,721...)')
+    parser.add_argument('-data', action = 'store', dest = 'data', 
+                        default = False, required = False,
+                        help = 'Dataset local no formato CSV (Ex: nome_dataset.csv).')
     parser.add_argument('-output', action = 'store', dest = 'output', required = False,
                         default = 'output',help = 'Endereço de saida dos dados. Default = output, nesse diretório serao salvos todos os arquivos gerados.')
     
     arguments = parser.parse_args()
-    main(arguments.data.split(),arguments.output)
+    main(arguments.OpenID.split(),arguments.data,arguments.output)
