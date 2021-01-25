@@ -107,15 +107,15 @@ def saveFile(lis,cols,path,name):
 
 def main(arg_data,arg_dataset,arg_output = 'output'):
     
+    #Cria o diretoria de saida caso nao exista
+    out = arg_output
+    if not os.path.exists(out):
+        os.mkdir(out)
+        print("Diretorio " , out ,  " criado\n")
+    
     if not arg_dataset:
         #Cria a pasta cache para salvar os dados do OpenML
         openml.config.cache_directory = os.path.expanduser(os.getcwd()+'/cache')
-        
-        #Cria o diretoria de saida caso nao exista
-        out = arg_output
-        if not os.path.exists(out):
-            os.mkdir(out)
-            print("Diretorio " , out ,  " criado\n")
         
         listDid = []
         if 'csv' in str(arg_data[0]).split('.'):
