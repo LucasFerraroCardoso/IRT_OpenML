@@ -126,7 +126,7 @@ def main(arg_data,arg_output = 'output'):
         except:
             X_train, X_test, y_train_label, y_test_label = train_test_split(X, y,random_state=42,test_size=split)
         #Quantidade de folds para treino
-        cv = KFold(n_splits=5, random_state=42, shuffle=False)
+        cv = KFold(n_splits=10, random_state=42, shuffle=False)
         
         #Listas de media de treinamento, acuracia final e vetor com as respostas
         mlp_media =[]
