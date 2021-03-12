@@ -68,9 +68,9 @@ def encodeData(arg_dataset):
     
     dataset = dataset.transpose()
     #meta_d = meta_d.transpose()
-    y, target = pd.factorize(list(data[features[-1]]))
+    y, attribute_names = pd.factorize(list(data[features[-1]]))
     
-    return dataset, y
+    return dataset, y, attribute_names, features
 
 def compare(original, res):
     """
@@ -148,15 +148,24 @@ def main(arg_data,arg_dataset,arg_output = 'output'):
     for d in listDid:
         inicio = time.time() #inicia a contagem do tempo de execução
         
+        name_tmp = '' #Seta o nome do dataset        
         if not arg_dataset:
             dataset = openml.datasets.get_dataset(d)
+            name_tmp = dataset.name
             print("Dataset: '%s' \n" %(dataset.name))
         
             X, y, categorical_indicator, attribute_names = dataset.get_data(
                 dataset_format='array',
                 target=dataset.default_target_attribute)
         else:
-            X, y = encodeData(arg_dataset)
+            name_tmp = arg_dataset[:-4]
+            X, y, _, features = encodeData(arg_dataset)
+            data_tmp = []
+            for count, value in enumerate(X):
+                data_tmp.append(list(value))
+                data_tmp[count].append(y[count])
+            print('Saving the numeric-encoded dataset ',name_tmp+'_encode.csv')
+            saveFile(data_tmp,features,''+os.getcwd()+'/',name_tmp+'_encode.csv')
         
         #Verifica se existe valores faltosos, se existir substitui por zero
         if len(np.where(np.isnan(X))[0]) > 0:
@@ -225,7 +234,7 @@ def main(arg_data,arg_dataset,arg_output = 'output'):
                RandomForestClassifier(),SVC(),MLPClassifier()]
         
         #Quantidade de folds para treino
-        cv = KFold(n_splits=10, random_state=42, shuffle=True)
+        cv = KFold(n_splits=10, random_state=42, shuffle=False)
         
         for clf in list_clf:
             list_accur = []
@@ -313,11 +322,6 @@ def main(arg_data,arg_dataset,arg_output = 'output'):
         
         item_name = ['V'+str(i+1) for i in range(len(y_test_label))]
         
-        name_tmp = ''
-        if not arg_dataset: 
-            name_tmp = dataset.name
-        else:
-            name_tmp = arg_dataset[:-4]
         #Cria a pasta para o dataset individualmente
         if not os.path.exists(arg_output+'/'+name_tmp):
             os.mkdir(arg_output+'/'+name_tmp)
