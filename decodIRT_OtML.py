@@ -49,9 +49,11 @@ def encodeData(arg_dataset):
     dataset = np.array([])
     #meta_d = np.array([])
     #dataset = []
+    key = 0
     for f in range(len(features)-1):
         
         if data[features[f]].dtypes == np.object:
+            key = 1
             if len(dataset) == 0:
                 num_data, meta_data = pd.factorize(list(data[features[f]]))
                 dataset = np.array(num_data)
@@ -70,7 +72,7 @@ def encodeData(arg_dataset):
     #meta_d = meta_d.transpose()
     y, attribute_names = pd.factorize(list(data[features[-1]]))
     
-    return dataset, y, attribute_names, features
+    return dataset, y, attribute_names, features, key
 
 def compare(original, res):
     """
@@ -159,13 +161,14 @@ def main(arg_data,arg_dataset,arg_output = 'output'):
                 target=dataset.default_target_attribute)
         else:
             name_tmp = arg_dataset[:-4]
-            X, y, _, features = encodeData(arg_dataset)
-            data_tmp = []
-            for count, value in enumerate(X):
-                data_tmp.append(list(value))
-                data_tmp[count].append(y[count])
-            print('Saving the numeric-encoded dataset ',name_tmp+'_encode.csv')
-            saveFile(data_tmp,features,''+os.getcwd()+'/',name_tmp+'_encode.csv')
+            X, y, _, features, key = encodeData(arg_dataset)
+            if key:
+                data_tmp = []
+                for count, value in enumerate(X):
+                    data_tmp.append(list(value))
+                    data_tmp[count].append(y[count])
+                print('Saving the numeric-encoded dataset ',name_tmp+'_encode.csv')
+                saveFile(data_tmp,features,''+os.getcwd()+'/',name_tmp+'_encode.csv')
         
         #Verifica se existe valores faltosos, se existir substitui por zero
         if len(np.where(np.isnan(X))[0]) > 0:
