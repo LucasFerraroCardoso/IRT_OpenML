@@ -184,6 +184,25 @@ def main(arg_data,arg_dataset,arg_output = 'output'):
             X_train, X_test, y_train_label, y_test_label = train_test_split(X, y,stratify=y,test_size=split)
         except:
             X_train, X_test, y_train_label, y_test_label = train_test_split(X, y,random_state=42,test_size=split)
+        
+        
+        dataset_train = []
+        for count, value in enumerate(X_train):
+            tmp = np.append(value,y_train_label[count])
+            dataset_train.append(tmp)
+        
+        dataset_test = []
+        for count, value in enumerate(X_test):
+            tmp = np.append(value,y_test_label[count])
+            dataset_test.append(tmp)
+        
+        if not arg_dataset:
+            saveFile(dataset_train,attribute_names+['class'],''+os.getcwd()+'/',name_tmp+'_train.csv')
+            saveFile(dataset_test,attribute_names+['class'],''+os.getcwd()+'/',name_tmp+'_test.csv')
+        else:
+            saveFile(dataset_train,features,''+os.getcwd()+'/',name_tmp+'_train.csv')
+            saveFile(dataset_test,features,''+os.getcwd()+'/',name_tmp+'_test.csv')
+        
         #Quantidade de folds para treino
         cv = KFold(n_splits=10, random_state=42, shuffle=True)
         
@@ -332,7 +351,7 @@ def main(arg_data,arg_dataset,arg_output = 'output'):
         
         pathway = ''+os.getcwd()+'/'+out+'/'+name_tmp+'/'
         #Salvando itens usados para o teste
-        saveFile(list(zip(X_test,y_test_label)),['Item','Classe'],pathway,name_tmp+'_test.csv')
+        #saveFile(list(zip(X_test,y_test_label)),['Item','Classe'],pathway,name_tmp+'_test.csv')
         #Cria o arquivo contendo as repostas dos metodos de ML para gerar os parametros do IRT
         saveFile(mlp_resp,item_name,pathway,name_tmp+'_irt.csv')
         #Cria o aquivo contendo as repostas dos metodos de ML que serão avaliados
