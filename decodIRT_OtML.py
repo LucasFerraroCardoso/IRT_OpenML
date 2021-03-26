@@ -16,6 +16,7 @@ import pandas as pd
 import csv
 import gc
 import os
+import sys
 from tqdm import tqdm
 from sklearn.naive_bayes import GaussianNB,BernoulliNB
 from sklearn.metrics import accuracy_score
@@ -107,7 +108,7 @@ def saveFile(lis,cols,path,name):
     df_media = pd.DataFrame(lis, columns = cols)
     df_media.to_csv(r''+path+name,index=0)
 
-def main(arg_data,arg_dataset,arg_output = 'output'):
+def main(arg_data,arg_dataset,arg_dataTest,arg_saveData,arg_output = 'output'):
     
     #Cria o diretoria de saida caso nao exista
     out = arg_output
@@ -162,7 +163,7 @@ def main(arg_data,arg_dataset,arg_output = 'output'):
         else:
             name_tmp = arg_dataset[:-4]
             X, y, _, features, key = encodeData(arg_dataset)
-            if key:
+            if key and not arg_dataTest:
                 data_tmp = []
                 for count, value in enumerate(X):
                     data_tmp.append(list(value))
@@ -170,22 +171,39 @@ def main(arg_data,arg_dataset,arg_output = 'output'):
                 print('Saving the numeric-encoded dataset ',name_tmp+'_encode.csv')
                 saveFile(data_tmp,features,''+os.getcwd()+'/',name_tmp+'_encode.csv')
         
-        #Verifica se existe valores faltosos, se existir substitui por zero
-        if len(np.where(np.isnan(X))[0]) > 0:
-            X = np.nan_to_num(X)
-        
-        #Calcula split
-        split = 0.3
-        if 0.3*len(y) > 500:
-            split = float('%g' % (500/len(y)))
-        
-        #Split estratificado
-        try:
-            X_train, X_test, y_train_label, y_test_label = train_test_split(X, y,stratify=y,test_size=split)
-        except:
-            X_train, X_test, y_train_label, y_test_label = train_test_split(X, y,random_state=42,test_size=split)
-        
-        
+        if not arg_dataTest:#Verifica se foi passado o dataset de test no input
+            #Verifica se existe valores faltosos, se existir substitui por zero
+            if len(np.where(np.isnan(X))[0]) > 0:
+                X = np.nan_to_num(X)
+            
+            #Calcula split
+            split = 0.3
+            if 0.3*len(y) > 500:
+                split = float('%g' % (500/len(y)))
+            
+            #Split estratificado
+            try:
+                X_train, X_test, y_train_label, y_test_label = train_test_split(X, y,stratify=y,test_size=split)
+            except:
+                X_train, X_test, y_train_label, y_test_label = train_test_split(X, y,random_state=42,test_size=split)
+        else:
+            X_test, y_test_label, _, features, key = encodeData(arg_dataTest)
+            if len(X_test) > 500:
+                print('The test dataset has more than 500 instances. This amount can cause error when generating the item parameters.')
+                resp = input('Do you want to continue anyway? If so, press any key. If not, press n.')
+                if resp == 'n' or resp == 'N':
+                    sys.exit("Execution finished")
+                else:
+                    pass
+            if key:
+                data_tmp = []
+                for count, value in enumerate(X):
+                    data_tmp.append(list(value))
+                    data_tmp[count].append(y[count])
+                print('Saving the numeric-encoded dataset ',name_tmp+'_encodeTest.csv')
+                saveFile(data_tmp,features,''+os.getcwd()+'/',name_tmp+'_encodeTest.csv')
+            X_train, y_train_label = X, y
+
         #Quantidade de folds para treino
         cv = KFold(n_splits=10, random_state=42, shuffle=True)
         
@@ -336,22 +354,23 @@ def main(arg_data,arg_dataset,arg_output = 'output'):
         
         #Salvando itens usados para o teste
         #saveFile(list(zip(X_test,y_test_label)),['Item','Classe'],pathway,name_tmp+'_test.csv')
-        dataset_train = []
-        for count, value in enumerate(X_train):
-            tmp = np.append(value,y_train_label[count])
-            dataset_train.append(tmp)
-        
-        dataset_test = []
-        for count, value in enumerate(X_test):
-            tmp = np.append(value,y_test_label[count])
-            dataset_test.append(tmp)
-        
-        if not arg_dataset:
-            saveFile(dataset_train,attribute_names+['class'],pathway,name_tmp+'_train.csv')
-            saveFile(dataset_test,attribute_names+['class'],pathway,name_tmp+'_test.csv')
-        else:
-            saveFile(dataset_train,features,pathway,name_tmp+'_train.csv')
-            saveFile(dataset_test,features,pathway,name_tmp+'_test.csv')
+        if arg_saveData:
+            dataset_train = []
+            for count, value in enumerate(X_train):
+                tmp = np.append(value,y_train_label[count])
+                dataset_train.append(tmp)
+            
+            dataset_test = []
+            for count, value in enumerate(X_test):
+                tmp = np.append(value,y_test_label[count])
+                dataset_test.append(tmp)
+            
+            if not arg_dataset:
+                saveFile(dataset_train,attribute_names+['class'],pathway,name_tmp+'_train.csv')
+                saveFile(dataset_test,attribute_names+['class'],pathway,name_tmp+'_test.csv')
+            else:
+                saveFile(dataset_train,features,pathway,name_tmp+'_train.csv')
+                saveFile(dataset_test,features,pathway,name_tmp+'_test.csv')
         
         #Cria o arquivo contendo as repostas dos metodos de ML para gerar os parametros do IRT
         saveFile(mlp_resp,item_name,pathway,name_tmp+'_irt.csv')
@@ -398,9 +417,15 @@ if __name__ == '__main__':
                         help = 'Lista de Id dos datasets do OpenML. Pode ser um arquivo (Ex: dataset.csv) ou pode ser uma lista (Ex: 53,721...)')
     parser.add_argument('-data', action = 'store', dest = 'data', 
                         default = False, required = False,
-                        help = 'Dataset local no formato CSV (Ex: nome_dataset.csv).')
+                        help = 'Dataset local no formato CSV (Ex: nome_dataset.csv). Pode ser para treinamento e teste ou só para treinamento.')
+    parser.add_argument('-dataTest', action = 'store', dest = 'dataTest', 
+                        default = False, required = False,
+                        help = 'Dataset local de teste no formato CSV (Ex: nome_dataset.csv). Se passado esse parâmetro entende-se que o -data será o dataset de treinamento.')
+    parser.add_argument('-saveData', action = 'store_true', dest = 'saveData', 
+                        default = False, required = False,
+                        help = 'Salva os datasets de treinamento e de teste.')
     parser.add_argument('-output', action = 'store', dest = 'output', required = False,
                         default = 'output',help = 'Endereço de saida dos dados. Default = output, nesse diretório serao salvos todos os arquivos gerados.')
     
     arguments = parser.parse_args()
-    main(arguments.OpenID.split(),arguments.data,arguments.output)
+    main(arguments.OpenID.split(),arguments.data,arguments.dataTest,arguments.saveData,arguments.output)
