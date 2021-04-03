@@ -183,9 +183,9 @@ def main(arg_data,arg_dataset,arg_dataTest,arg_saveData,arg_output = 'output'):
             
             #Split estratificado
             try:
-                X_train, X_test, y_train_label, y_test_label = train_test_split(X, y,stratify=y,test_size=split)
+                X_train, X_test, y_train_label, y_test_label = train_test_split(X, y,stratify=y,random_state=42,shuffle=True,test_size=split)
             except:
-                X_train, X_test, y_train_label, y_test_label = train_test_split(X, y,random_state=42,test_size=split)
+                X_train, X_test, y_train_label, y_test_label = train_test_split(X, y,random_state=42,shuffle=True,test_size=split)
         else:
             X_test, y_test_label, _, features, key = encodeData(arg_dataTest)
             if len(X_test) > 500:
