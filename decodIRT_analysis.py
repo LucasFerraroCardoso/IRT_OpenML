@@ -270,7 +270,7 @@ def thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_thet
     um dos classificadores.
     """
     
-    from catsim.estimation import HillClimbingEstimator
+    from catsim.estimation import HillClimbingEstimator, DifferentialEvolutionEstimator
 
     names = str(list_theta[dataset].keys).split()[6:]
     names = [names[i] for i in range(0,len(names),2)]
@@ -314,20 +314,29 @@ def thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_thet
         #print('qtd ',qtd)
         #print(itens)
         #a = input('TEste')
-        for i in range(10):
-        #Calcula o novo theta com base na acuracia de cada classificador
+        try:
+            for i in range(10):
+            #Calcula o novo theta com base na acuracia de cada classificador
+                items=irt_dict[dataset]
+                adm_items= itens[:qtd]
+                #print(items)
+                itens = itens[qtd:]#Corte
+                r_vector=item_resp[:qtd]
+                item_resp = item_resp[qtd:]#Corte
+                #e_theta=list_theta[dataset].to_numpy()[t][0]
+                new_theta = HillClimbingEstimator().estimate(items=items, 
+                                                 administered_items= adm_items, 
+                                                 response_vector=r_vector, 
+                                                 est_theta=e_theta)
+                e_theta = new_theta
+        except:
             items=irt_dict[dataset]
-            adm_items= itens[:qtd]
-            #print(items)
-            itens = itens[qtd:]#Corte
-            r_vector=item_resp[:qtd]
-            item_resp = item_resp[qtd:]#Corte
-            #e_theta=list_theta[dataset].to_numpy()[t][0]
-            new_theta = HillClimbingEstimator().estimate(items=items, 
-                                             administered_items= adm_items, 
-                                             response_vector=r_vector, 
-                                             est_theta=e_theta)
-            e_theta = new_theta
+            adm_items= itens
+            r_vector=item_resp
+            print(parameter)
+            new_theta = DifferentialEvolutionEstimator().estimate(items=items, 
+                                                 administered_items= adm_items, 
+                                                 response_vector=r_vector)
         
         #list_new_theta.append(new_theta)
         
@@ -341,7 +350,7 @@ def thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_thet
     return tmp
         #dict_theta[dataset] = tmp
 
-def thetaAllClfEstimate(dict_tmp, irt_dict, irt_resp_dict, list_theta, out, param = ['Dificuldade','Discriminacao', 'Adivinhacao'], save = False):
+def thetaAllClfEstimate(dict_tmp, irt_dict, irt_resp_dict, list_theta,out, param = ['Dificuldade','Discriminacao', 'Adivinhacao'] , save = False):
     """
     Função que chama o método thetaClfEstimate e estima o valor de (theta) dos 
     classificadores para todos os datasets.
@@ -654,7 +663,7 @@ def main(arg_dir = 'output',limit_dif = 1,limit_dis = 0.75,limit_adv = 0.2,plotD
         calcPro(icc_dict,dict_tmp,dataset, out,save = save)
         
     if scoreAll:
-        dict_theta = thetaAllClfEstimate(dict_tmp,irt_dict,irt_resp_dict,list_theta,['Dificuldade'], out,save = save)
+        dict_theta = thetaAllClfEstimate(dict_tmp,irt_dict,irt_resp_dict,list_theta,out,param = ['Dificuldade'],save = save)
         icc_dict = CalcICC(dict_theta,irt_dict)
         calcAllPro(icc_dict,dict_tmp, out,save = save)
         
