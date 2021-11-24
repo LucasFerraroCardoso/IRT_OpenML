@@ -42,7 +42,7 @@ Although the tool can analyze multiple datasets, in this tutorial only one will 
 
 The first script will be executed using the -data parameter to enter the dataset ID to be downloaded. If more than one dataset, IDs can be passed in list form.
 
-`$ python decodIRT_OtML -data 31`
+`$ python decodIRT_OtML -OpenID 31`
 
 Information about the chosen dataset and the execution of the classifiers is displayed on screen during program execution. After execution, all generated data will be saved in 6 different files in a directory called "output".
 
