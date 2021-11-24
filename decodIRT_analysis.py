@@ -270,7 +270,7 @@ def thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_thet
     um dos classificadores.
     """
     
-    from catsim.estimation import HillClimbingEstimator, DifferentialEvolutionEstimator
+    from catsim.estimation import NumericalSearchEstimator
 
     names = str(list_theta[dataset].keys).split()[6:]
     names = [names[i] for i in range(0,len(names),2)]
@@ -324,7 +324,7 @@ def thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_thet
                 r_vector=item_resp[:qtd]
                 item_resp = item_resp[qtd:]#Corte
                 #e_theta=list_theta[dataset].to_numpy()[t][0]
-                new_theta = HillClimbingEstimator().estimate(items=items, 
+                new_theta = NumericalSearchEstimator().estimate(items=items, 
                                                  administered_items= adm_items, 
                                                  response_vector=r_vector, 
                                                  est_theta=e_theta)
@@ -334,7 +334,7 @@ def thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_thet
             adm_items= itens
             r_vector=item_resp
             print(parameter)
-            new_theta = DifferentialEvolutionEstimator().estimate(items=items, 
+            new_theta = NumericalSearchEstimator().estimate(items=items, 
                                                  administered_items= adm_items, 
                                                  response_vector=r_vector)
         
