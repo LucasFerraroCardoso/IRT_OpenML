@@ -85,6 +85,8 @@ def main(arg_dir = 'output',respMatrix=None,arg_url = None):
     pandas2ri.activate()
     
     
+    if not os.path.exists(arg_dir):
+        os.makedirs(arg_dir)
     out = '/'+arg_dir
     
     #Pega todos os arquivos contendo os valores para o IRT
