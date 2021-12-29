@@ -84,10 +84,12 @@ def main(arg_dir = 'output',respMatrix=None,arg_url = None):
     ltm = rpackages.importr('ltm')
     pandas2ri.activate()
     
-    
-    if not os.path.exists(arg_dir):
-        os.makedirs(arg_dir)
-    out = '/'+arg_dir
+    if arg_dir != '':
+        if not os.path.exists(arg_dir):
+            os.makedirs(arg_dir)
+            out = '/'+arg_dir
+    else:
+        out = ''
     
     #Pega todos os arquivos contendo os valores para o IRT
     list_data_irt = []
