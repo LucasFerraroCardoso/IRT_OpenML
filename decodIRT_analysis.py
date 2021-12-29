@@ -651,6 +651,8 @@ def main(arg_dir = 'output',respMatrix=None,IRTparam=None,accur=None,limit_dif =
             irt_resp_dict[path] = res_vector
     else:
         path = 'dataset'
+        if not os.path.exists(os.getcwd()+out+'/'+path):
+            os.makedirs(os.getcwd()+out+'/'+path)
         irt_parameters = pd.read_csv(IRTparam,index_col=0).to_numpy()
         col = np.ones((len(irt_parameters), 1))    
         new_irt = np.append(irt_parameters, col, axis = 1)
