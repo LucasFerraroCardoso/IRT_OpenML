@@ -627,7 +627,7 @@ def getThetaResp(respMatrix):
     
     return res_vector, theta
     
-def main(arg_dir = 'output',respMatrix=None,IRTparam=None,accur=None,limit_dif = 1,limit_dis = 0.75,limit_adv = 0.2,plotDataHist = None,plotAllHist = False,bins = None,plotDataCCC = None,plotAllCCC = False,scoreData = None,scoreAll = False,save = False):  
+def main(arg_dir = 'output',respMatrix=None,IRTparam=None,accur=None,nameData=None,limit_dif = 1,limit_dis = 0.75,limit_adv = 0.2,plotDataHist = None,plotAllHist = False,bins = None,plotDataCCC = None,plotAllCCC = False,scoreData = None,scoreAll = False,save = False):  
     out  = '/'+arg_dir    
     
     #Proficiencia inicial de cada metodo
@@ -650,7 +650,7 @@ def main(arg_dir = 'output',respMatrix=None,IRTparam=None,accur=None,limit_dif =
             irt_dict[path] = new_irt
             irt_resp_dict[path] = res_vector
     else:
-        path = 'dataset'
+        path = nameData
         if not os.path.exists(os.getcwd()+out+'/'+path):
             os.makedirs(os.getcwd()+out+'/'+path)
         irt_parameters = pd.read_csv(IRTparam,index_col=0).to_numpy()
@@ -725,6 +725,9 @@ if __name__ == '__main__':
     parser.add_argument('-accur', action = 'store', dest = 'accur',
                         default = None, required = False,
                         help = 'Matriz contendo o nome dos modelos habilidade inicial (Ex: acuracia.csv)')
+    parser.add_argument('-nameData', action = 'store', dest = 'nameData',
+                        default = 'dataset', required = False,
+                        help = 'Nome do dataset analisado (Ex: dataset_name)')
     parser.add_argument('-limit_dif', action = 'store', dest = 'limit_dif', required = False, type=float,
                         default = 1,help = 'Valor minimo para um item ser dificil (Ex: 1)')
     parser.add_argument('-limit_dis', action = 'store', dest = 'limit_dis', required = False, type=float,
@@ -750,4 +753,4 @@ if __name__ == '__main__':
     
     arguments = parser.parse_args()
     #out  = '/'+arguments.dir
-    main(arguments.dir,arguments.respMatrix,arguments.IRTparam,arguments.accur,arguments.limit_dif,arguments.limit_dis,arguments.limit_adv,arguments.plotDataHist,arguments.plotAllHist,arguments.bins,arguments.plotDataCCC,arguments.plotAllCCC,arguments.scoreData,arguments.scoreAll,arguments.save)
+    main(arguments.dir,arguments.respMatrix,arguments.IRTparam,arguments.accur,arguments.nameData,arguments.limit_dif,arguments.limit_dis,arguments.limit_adv,arguments.plotDataHist,arguments.plotAllHist,arguments.bins,arguments.plotDataCCC,arguments.plotAllCCC,arguments.scoreData,arguments.scoreAll,arguments.save)
