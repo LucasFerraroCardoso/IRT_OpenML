@@ -272,10 +272,12 @@ def thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_thet
     
     from catsim.estimation import NumericalSearchEstimator
 
-    names = str(list_theta[dataset].keys).split()[6:]
-    names = [names[i] for i in range(0,len(names),2)]
+    #names = str(list_theta[dataset].keys).split()[6:]
+    #print(list_theta[dataset].index)
+    #names = [names[i] for i in range(0,len(names),2)]
+    names = list(list_theta[dataset].index)
     tmp = {}
-        
+    #print(names)
     for t in range(len(names)):
         
         itens = []
@@ -432,7 +434,7 @@ def CalcINF(dict_theta,irt_dict):
         
     return icc_dict
 
-def calcPro(icc_dict,dict_tmp,dataset, out,save = False):
+def calcPro(icc_dict,dict_tmp,dataset, accur,out,save = False):
     """
     Função que calcula a os valores de True-Score para os classificadores para
     um determinado dataset e gera um gráfico agrupando os classificadores.
@@ -464,31 +466,35 @@ def calcPro(icc_dict,dict_tmp,dataset, out,save = False):
     #print(l_score_total)
     
     import matplotlib.pyplot as plt
-    eager = ['otimo','SVM', 'MLPClassifier','DecisionTreeClassifier()','GaussianNB', 'BernoulliNB']
-    ensemble = ['RandomForestClassifier(3_estimators)', 'RandomForestClassifier(5_estimators)', 'RandomForestClassifier']
-    lazy = ['KNeighborsClassifier(2)', 'KNeighborsClassifier(3)', 'KNeighborsClassifier(5)', 'KNeighborsClassifier(8)','rand1', 'rand2', 'rand3', 'majoritario', 'minoritario', 'pessimo']
+    if accur == None:
+        eager = ['otimo','SVM', 'MLPClassifier','DecisionTreeClassifier()','GaussianNB', 'BernoulliNB']
+        ensemble = ['RandomForestClassifier(3_estimators)', 'RandomForestClassifier(5_estimators)', 'RandomForestClassifier']
+        lazy = ['KNeighborsClassifier(2)', 'KNeighborsClassifier(3)', 'KNeighborsClassifier(5)', 'KNeighborsClassifier(8)','rand1', 'rand2', 'rand3', 'majoritario', 'minoritario', 'pessimo']
     
-    key = [1,1,1]
-    for clfscore in l_score_total:    
-        if clfscore[0] in eager:
-            if key[0]:
-                key[0] = 0
-                plt.plot(clfscore[1], clfscore[0], 'ro',color='deepskyblue',label='eager')
-            else:
-                plt.plot(clfscore[1], clfscore[0], 'ro',color='deepskyblue')
-            #plt.legend(plt, ['eager'])
-        if clfscore[0] in ensemble:
-            if key[1]:
-                key[1] = 0
-                plt.plot(clfscore[1], clfscore[0], 'ro',color='gold',label='ensemble')
-            else:
-                plt.plot(clfscore[1], clfscore[0], 'ro',color='gold')
-        if clfscore[0] in lazy:
-            if key[2]:
-                key[2] = 0
-                plt.plot(clfscore[1], clfscore[0], 'ro',color='orangered',label='lazy')
-            else:
-                plt.plot(clfscore[1], clfscore[0], 'ro',color='orangered')
+        key = [1,1,1]
+        for clfscore in l_score_total:    
+            if clfscore[0] in eager:
+                if key[0]:
+                    key[0] = 0
+                    plt.plot(clfscore[1], clfscore[0], 'ro',color='deepskyblue',label='eager')
+                else:
+                    plt.plot(clfscore[1], clfscore[0], 'ro',color='deepskyblue')
+                #plt.legend(plt, ['eager'])
+            if clfscore[0] in ensemble:
+                if key[1]:
+                    key[1] = 0
+                    plt.plot(clfscore[1], clfscore[0], 'ro',color='gold',label='ensemble')
+                else:
+                    plt.plot(clfscore[1], clfscore[0], 'ro',color='gold')
+            if clfscore[0] in lazy:
+                if key[2]:
+                    key[2] = 0
+                    plt.plot(clfscore[1], clfscore[0], 'ro',color='orangered',label='lazy')
+                else:
+                    plt.plot(clfscore[1], clfscore[0], 'ro',color='orangered')
+    else:
+        for clfscore in l_score_total:
+            plt.plot(clfscore[1], clfscore[0], 'ro')
     
     plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.15),ncol=3, fancybox=True)
     plt.grid(axis='y',linestyle='--')
@@ -516,7 +522,7 @@ def calcPro(icc_dict,dict_tmp,dataset, out,save = False):
         plt.show()
     #return score_total,score_pos
             
-def calcAllPro(icc_dict,dict_tmp, out,save = False):
+def calcAllPro(icc_dict,dict_tmp, accur,out,save = False):
     """
     Função que chama a função calcPro e calcula a os valores de True-Score para
     todos os classificadores para todos os determinado dataset.
@@ -529,7 +535,7 @@ def calcAllPro(icc_dict,dict_tmp, out,save = False):
     datasets = list(icc_dict.keys())
     
     for dataset in datasets:
-         calcPro(icc_dict,dict_tmp,dataset, out,save = save)
+         calcPro(icc_dict,dict_tmp,dataset,accur, out,save = save)
          
     if save:
         print('\nOs scores dos classificadores para todos os datasets foram salvos \o/\n')
@@ -606,27 +612,58 @@ def plotAllCCC(icc_dict,dict_tmp, out,save = False):
             
     if save:
         print('\nTodos as CCCs foram salvas \o/\n')
+
+def getThetaResp(respMatrix):
+    teste = pd.read_csv(respMatrix, index_col=0)
+    clfs = list(teste.index)
+    dict_clfs = {}
+    for clf in clfs:
+        tmp = list(teste.loc[clf])
+        dict_clfs[clf] = sum(tmp)/len(tmp)
+    theta = pd.DataFrame.from_dict(dict_clfs, orient='index',columns=['Acuracia'])
+    theta.index.name = 'Metodo'
     
-def main(arg_dir = 'output',limit_dif = 1,limit_dis = 0.75,limit_adv = 0.2,plotDataHist = None,plotAllHist = False,bins = None,plotDataCCC = None,plotAllCCC = False,scoreData = None,scoreAll = False,save = False):  
+    res_vector = teste.to_numpy()
+    
+    return res_vector, theta
+    
+def main(arg_dir = 'output',respMatrix=None,IRTparam=None,accur=None,limit_dif = 1,limit_dis = 0.75,limit_adv = 0.2,plotDataHist = None,plotAllHist = False,bins = None,plotDataCCC = None,plotAllCCC = False,scoreData = None,scoreAll = False,save = False):  
     out  = '/'+arg_dir    
     
     #Proficiencia inicial de cada metodo
     list_theta = {}      
-    #Lista todos os diretorios de datasets da pasta output
-    list_dir = os.listdir(os.getcwd()+out)
     #Pega todos os arquivos contendo os valores para o IRT
     irt_dict = {}
     irt_resp_dict = {}
-    for path in list_dir:
-        
-        theta = pd.read_csv(os.getcwd()+out+'/'+path+'/'+path+'_final.csv',index_col=0)
-        list_theta[path] = theta
-        irt_parameters = pd.read_csv(os.getcwd()+out+'/'+path+'/irt_item_param.csv',index_col=0).to_numpy()
-        res_vector = pd.read_csv(os.getcwd()+out+'/'+path+'/'+path+'.csv').to_numpy()
+    
+    if respMatrix == None and IRTparam == None:   
+        #Lista todos os diretorios de datasets da pasta output
+        list_dir = os.listdir(os.getcwd()+out)
+        for path in list_dir:
+            
+            theta = pd.read_csv(os.getcwd()+out+'/'+path+'/'+path+'_final.csv',index_col=0)
+            list_theta[path] = theta
+            irt_parameters = pd.read_csv(os.getcwd()+out+'/'+path+'/irt_item_param.csv',index_col=0).to_numpy()
+            res_vector = pd.read_csv(os.getcwd()+out+'/'+path+'/'+path+'.csv').to_numpy()
+            col = np.ones((len(irt_parameters), 1))    
+            new_irt = np.append(irt_parameters, col, axis = 1)
+            irt_dict[path] = new_irt
+            irt_resp_dict[path] = res_vector
+    else:
+        path = 'dataset'
+        irt_parameters = pd.read_csv(IRTparam,index_col=0).to_numpy()
         col = np.ones((len(irt_parameters), 1))    
         new_irt = np.append(irt_parameters, col, axis = 1)
         irt_dict[path] = new_irt
+        
+        if accur == None:
+            res_vector, theta = getThetaResp(respMatrix)
+        else:
+            res_vector = pd.read_csv(respMatrix, index_col=0).to_numpy()
+            theta = pd.read_csv(accur,index_col=0)
         irt_resp_dict[path] = res_vector
+        list_theta[path] = theta
+        
     
     dict_tmp = verificaParametros(irt_dict)
     tmp_freq = freqParam(dict_tmp,limit_dif,limit_dis,limit_adv)
@@ -660,12 +697,12 @@ def main(arg_dir = 'output',limit_dif = 1,limit_dis = 0.75,limit_adv = 0.2,plotD
         p['Dificuldade'] = thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,'Dificuldade',list_theta, out,save = save)
         dict_theta[dataset] = p
         icc_dict = CalcICC(dict_theta,irt_dict)
-        calcPro(icc_dict,dict_tmp,dataset, out,save = save)
+        calcPro(icc_dict,dict_tmp,dataset,accur, out,save = save)
         
     if scoreAll:
         dict_theta = thetaAllClfEstimate(dict_tmp,irt_dict,irt_resp_dict,list_theta,out,param = ['Dificuldade'],save = save)
         icc_dict = CalcICC(dict_theta,irt_dict)
-        calcAllPro(icc_dict,dict_tmp, out,save = save)
+        calcAllPro(icc_dict,dict_tmp, accur,out,save = save)
         
     #dict_theta = thetaAllClfEstimate(dict_tmp,irt_dict,irt_resp_dict,list_theta,param = ['Dificuldade'],save = save,out)
     #icc_dict = CalcICC(dict_theta,irt_dict)
@@ -677,6 +714,15 @@ if __name__ == '__main__':
     parser.add_argument('-dir', action = 'store', dest = 'dir',
                         default = 'output', required = False,
                         help = 'Nome do diretório onde estão as pastas dos datasets (Ex: output)')
+    parser.add_argument('-respMatrix', action = 'store', dest = 'respMatrix',
+                        default = None, required = False,
+                        help = 'Matriz de respostas com o resultado da classificacao dos modelos (Ex: matriz.csv)')
+    parser.add_argument('-IRTparam', action = 'store', dest = 'IRTparam',
+                        default = None, required = False,
+                        help = 'Matriz contendo os parametros de item calculados sobre a matriz de resposta (Ex: IRTparam.csv)')
+    parser.add_argument('-accur', action = 'store', dest = 'accur',
+                        default = None, required = False,
+                        help = 'Matriz contendo o nome dos modelos habilidade inicial (Ex: acuracia.csv)')
     parser.add_argument('-limit_dif', action = 'store', dest = 'limit_dif', required = False, type=float,
                         default = 1,help = 'Valor minimo para um item ser dificil (Ex: 1)')
     parser.add_argument('-limit_dis', action = 'store', dest = 'limit_dis', required = False, type=float,
@@ -702,4 +748,4 @@ if __name__ == '__main__':
     
     arguments = parser.parse_args()
     #out  = '/'+arguments.dir
-    main(arguments.dir,arguments.limit_dif,arguments.limit_dis,arguments.limit_adv,arguments.plotDataHist,arguments.plotAllHist,arguments.bins,arguments.plotDataCCC,arguments.plotAllCCC,arguments.scoreData,arguments.scoreAll,arguments.save)
+    main(arguments.dir,arguments.respMatrix,arguments.IRTparam,arguments.accur,arguments.limit_dif,arguments.limit_dis,arguments.limit_adv,arguments.plotDataHist,arguments.plotAllHist,arguments.bins,arguments.plotDataCCC,arguments.plotAllCCC,arguments.scoreData,arguments.scoreAll,arguments.save)

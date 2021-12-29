@@ -56,7 +56,14 @@ def insertMongo(dici,mongoClient,namedata):
 #                tmp[key] = value
     db.inventory.insert_one(tmp)
 
-def main(arg_dir = 'output',arg_url = None):    
+def formatMatrix(respMatrix):
+    teste = pd.read_csv(respMatrix, index_col=0)
+    n= teste.to_numpy()
+    n = len(n[0])
+    teste.to_csv('tmp_irt_teste.csv',index=False,header=['V'+str(i) for i in range(n)])
+    return 'tmp_irt_teste.csv'
+
+def main(arg_dir = 'output',respMatrix=None,arg_url = None):    
     #mongoClient = arguments.url
     
     #Importa o pacote utils do R para instalar e importar pacotes R
@@ -65,7 +72,7 @@ def main(arg_dir = 'output',arg_url = None):
     
     #Lista de pacotes R para instalar
     #O pacote ltm é usado para o calculo dos parametros do IRT
-    packnames = ('ltm','psych')
+    packnames = ('ltm','ltm')
     
     #Verifica se o pacote ja esta instalado, caso não, instala
     names_to_install = [x for x in packnames if not rpackages.isinstalled(x)]
@@ -84,18 +91,17 @@ def main(arg_dir = 'output',arg_url = None):
     
     #Pega todos os arquivos contendo os valores para o IRT
     list_data_irt = []
-    for path in list_dir:
-    #    if os.path.exists(os.getcwd()+out+'/'+path+'/'+path+'_irt.csv'):
-        try:
-            read = csv.reader( open(os.getcwd()+out+'/'+path+'/'+path+'_irt.csv', "r"))
-            list_data_irt.append(path+'_irt.csv')
-        except IOError:
-            print('Nao foi encontrado o arquivo para calculo do irt do dataset ',path)
-    #    for tmp in os.listdir(os.getcwd()+out+'/'+path):
-    #        if path+'_irt.csv' in tmp:
-    #            list_data_irt.append(tmp)
+    if respMatrix == None:
+        for path in list_dir:
+        #    if os.path.exists(os.getcwd()+out+'/'+path+'/'+path+'_irt.csv'):
+            try:
+                read = csv.reader( open(os.getcwd()+out+'/'+path+'/'+path+'_irt.csv', "r"))
+                list_data_irt.append(path+'_irt.csv')
+            except IOError:
+                print('Nao foi encontrado o arquivo para calculo do irt do dataset ',path)
+    else:
+        list_data_irt.append(respMatrix)
             
-    
     #file = ('heart-statlog_irt.csv')
     #data = robjects.r('PL3.rasch<-tpm(read.csv(file="heart-statlog_irt.csv"))')
                 
@@ -106,7 +112,10 @@ def main(arg_dir = 'output',arg_url = None):
         print("Calculando os parametros do IRT para o dataset: ",list_data_irt[f])
         
         #Calcula os parametros do IRT com o pacote ltm do R
-        file = os.getcwd()+'/'+out+'/'+list_dir[f]+'/'+list_data_irt[f]
+        if respMatrix == None:
+            file = os.getcwd()+'/'+out+'/'+list_dir[f]+'/'+list_data_irt[f]
+        else:
+            file = formatMatrix(list_data_irt[f])
         file = file.replace('\\','/')
         #try:
         data = robjects.r('tpm(read.csv(file="'+file+'"),IRT.param = TRUE)')
@@ -153,8 +162,11 @@ def main(arg_dir = 'output',arg_url = None):
         dataframe = dataframe.reindex(index = parameters)
         #break
         #Salva os parametros do IRT na pasta de cada dataset
-        dataframe.transpose().to_csv(r''+os.getcwd()+out+'/'+list_dir[f]+'/irt_item_param.csv')
-        
+        if respMatrix == None:
+            dataframe.transpose().to_csv(r''+os.getcwd()+out+'/'+list_dir[f]+'/irt_item_param.csv')
+        else:
+            os.remove(file)
+            dataframe.transpose().to_csv(r''+os.getcwd()+out+'/irt_item_param.csv')
         #Insere os dados do IRT no MongoDB
         if arg_url != None:
             try:
@@ -170,8 +182,11 @@ if __name__ == '__main__':
     parser.add_argument('-dir', action = 'store', dest = 'dir',
                         default = 'output', required = False,
                         help = 'Nome do diretório onde estão as pastas dos datasets (Ex: output)')
+    parser.add_argument('-respMatrix', action = 'store', dest = 'respMatrix',
+                        default = None, required = False,
+                        help = 'Matriz de resposta com o resultado da classificacao dos modelos (Ex: matriz.csv)')
     parser.add_argument('-url', action = 'store', dest = 'url', required = False,
                         help = 'URL do cluster no MongoDB, com usuario e senha (Ex: mongodb+srv://Usuario:senha@nomedocluster)')
     
     arguments = parser.parse_args()
-    main(arguments.dir,arguments.url)
+    main(arguments.dir,arguments.respMatrix,arguments.url)
