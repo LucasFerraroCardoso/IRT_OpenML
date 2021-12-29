@@ -86,12 +86,12 @@ def main(arg_dir = 'output',respMatrix=None,arg_url = None):
     
     
     out = '/'+arg_dir
-    #Lista todos os diretorios de datasets da pasta output
-    list_dir = os.listdir(os.getcwd()+out)
     
     #Pega todos os arquivos contendo os valores para o IRT
     list_data_irt = []
     if respMatrix == None:
+        #Lista todos os diretorios de datasets da pasta output
+        list_dir = os.listdir(os.getcwd()+out)
         for path in list_dir:
         #    if os.path.exists(os.getcwd()+out+'/'+path+'/'+path+'_irt.csv'):
             try:
