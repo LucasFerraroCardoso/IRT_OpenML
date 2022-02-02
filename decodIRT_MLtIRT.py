@@ -87,7 +87,7 @@ def main(arg_dir = 'output',respMatrix=None,arg_url = None):
     if arg_dir != '':
         if not os.path.exists(arg_dir):
             os.makedirs(arg_dir)
-            out = '/'+arg_dir
+        out = '/'+arg_dir
     else:
         out = ''
     
