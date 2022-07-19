@@ -46,7 +46,7 @@ def encodeData(arg_dataset):
         y: Array numpy com classes convertidas para numero.
     """
     data = pd.read_csv(arg_dataset)
-    data = data.sort_values(by=['y'], ascending=True)
+    data = data.sort_values(by=data.columns[-1], ascending=True)
     features = list(data.columns)
     dataset = np.array([])
     #meta_d = np.array([])
