@@ -162,7 +162,7 @@ def main(arg_data,arg_dataset,arg_dataTest,arg_saveData,arg_output = 'output'):
                 dataset_format='array',
                 target=dataset.default_target_attribute)
         else:
-            name_tmp = arg_dataset[:-4]
+            name_tmp = arg_dataset.split('/')[-1][:-4]
             X, y, _, features, key = encodeData(arg_dataset)
             if key and not arg_dataTest:
                 data_tmp = []
