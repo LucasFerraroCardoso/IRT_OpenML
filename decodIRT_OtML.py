@@ -28,7 +28,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import KFold
 import numpy as np
 import warnings
-from random import choice
+from random import choice, seed
 import argparse
 from sklearn.model_selection import train_test_split
 
@@ -109,7 +109,9 @@ def saveFile(lis,cols,path,name):
     df_media = pd.DataFrame(lis, columns = cols)
     df_media.to_csv(r''+path+name,index=0)
 
-def main(arg_data,arg_dataset,arg_dataTest,arg_saveData,arg_output = 'output'):
+def main(arg_data,arg_dataset,arg_dataTest,arg_saveData,arg_seed,arg_output = 'output'):
+    
+    seed(arg_seed)
     
     #Cria o diretoria de saida caso nao exista
     out = arg_output
@@ -136,7 +138,6 @@ def main(arg_data,arg_dataset,arg_dataTest,arg_saveData,arg_output = 'output'):
         print('Id\'s dos datasets a serem baixados : ',listDid)
         print("Acessando o OpenML e baixando os datasets\n")
    
-        datasetlist = []
         for i in tqdm(range(len(listDid))):
             openml.datasets.get_dataset(listDid[i])
             #datasetlist.append(dataset)
@@ -184,9 +185,9 @@ def main(arg_data,arg_dataset,arg_dataTest,arg_saveData,arg_output = 'output'):
             
             #Split estratificado
             try:
-                X_train, X_test, y_train_label, y_test_label = train_test_split(X, y,stratify=y,random_state=42,shuffle=True,test_size=split)
+                X_train, X_test, y_train_label, y_test_label = train_test_split(X, y,stratify=y,random_state=arg_seed,shuffle=True,test_size=split)
             except:
-                X_train, X_test, y_train_label, y_test_label = train_test_split(X, y,random_state=42,shuffle=True,test_size=split)
+                X_train, X_test, y_train_label, y_test_label = train_test_split(X, y,random_state=arg_seed,shuffle=True,test_size=split)
         else:
             X_test, y_test_label, _, features, key = encodeData(arg_dataTest)
             if len(X_test) > 500:
@@ -204,22 +205,22 @@ def main(arg_data,arg_dataset,arg_dataTest,arg_saveData,arg_output = 'output'):
                 print('Saving the numeric-encoded dataset ',name_tmp+'_encodeTest.csv')
                 saveFile(data_tmp,features,''+os.getcwd()+'/',name_tmp+'_encodeTest.csv')
             X_train, y_train_label = X, y
-
+        
         #Quantidade de folds para treino
-        cv = KFold(n_splits=10, random_state=42, shuffle=True)
+        cv = KFold(n_splits=10)
         
         #Listas de media de treinamento, acuracia final e vetor com as respostas
         mlp_media =[]
         mlp_score =[]
         mlp_resp =[]
         n = 1
-        for i in range(1,121):
+        for i in range(1,120):
             list_accur = []
             if i % 10 == 0:
                 n += 10
                 
             #O numero de iteracoes aumenta para permitir melhor desempenho da NN    
-            clf = MLPClassifier(max_iter=n)
+            clf = MLPClassifier(max_iter=i,random_state=arg_seed)
             print('Iniciando o metodo: ',clf)
             
             for train_index, test_index in cv.split(X_train):
@@ -253,12 +254,12 @@ def main(arg_data,arg_dataset,arg_dataTest,arg_saveData,arg_output = 'output'):
         
         #Lista de algoritmos de ML
         list_clf = [GaussianNB(),BernoulliNB(),KNeighborsClassifier(2),KNeighborsClassifier(3),
-               KNeighborsClassifier(5),KNeighborsClassifier(8),DecisionTreeClassifier(),
-               RandomForestClassifier(n_estimators=3),RandomForestClassifier(n_estimators=5),
-               RandomForestClassifier(),SVC(),MLPClassifier()]
+               KNeighborsClassifier(5),KNeighborsClassifier(8),DecisionTreeClassifier(random_state=arg_seed),
+               RandomForestClassifier(n_estimators=3,random_state=arg_seed),RandomForestClassifier(n_estimators=5,random_state=arg_seed),
+               RandomForestClassifier(random_state=arg_seed),SVC(),MLPClassifier(random_state=arg_seed)]
         
         #Quantidade de folds para treino
-        cv = KFold(n_splits=10, random_state=42, shuffle=True)
+        cv = KFold(n_splits=10,random_state=arg_seed,shuffle=True)
         
         for clf in list_clf:
             list_accur = []
@@ -425,8 +426,11 @@ if __name__ == '__main__':
     parser.add_argument('-saveData', action = 'store_true', dest = 'saveData', 
                         default = False, required = False,
                         help = 'Salva os datasets de treinamento e de teste.')
+    parser.add_argument('-seed', action = 'store', dest = 'seed', 
+                        default = 42, required = False,
+                        help = 'Valor de seed para reproducibilidade dos experimentos (Ex: 42).')
     parser.add_argument('-output', action = 'store', dest = 'output', required = False,
                         default = 'output',help = 'Endereço de saida dos dados. Default = output, nesse diretório serao salvos todos os arquivos gerados.')
     
     arguments = parser.parse_args()
-    main(arguments.OpenID.split(),arguments.data,arguments.dataTest,arguments.saveData,arguments.output)
+    main(arguments.OpenID.split(),arguments.data,arguments.dataTest,arguments.saveData,int(arguments.seed),arguments.output)
