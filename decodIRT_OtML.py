@@ -214,7 +214,7 @@ def main(arg_data,arg_dataset,arg_dataTest,arg_saveData,arg_seed,arg_output = 'o
         mlp_score =[]
         mlp_resp =[]
         n = 1
-        for i in range(1,100):
+        for i in range(1,101):
             list_accur = []
             if i % 10 == 0:
                 n += 10
