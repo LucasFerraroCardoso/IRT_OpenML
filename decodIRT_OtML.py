@@ -150,14 +150,14 @@ def main(arg_data,arg_dataset,arg_dataTest,arg_saveData,arg_seed,arg_output = 'o
     lista_tempo = []
     
     print("Executando os algoritmos de redes neurais para gerar os valores do IRT\n")
-    for d in listDid:
+    for i_dataset, d in enumerate(listDid):
         inicio = time.time() #inicia a contagem do tempo de execução
         
         name_tmp = '' #Seta o nome do dataset        
         if not arg_dataset:
             dataset = openml.datasets.get_dataset(d)
             name_tmp = dataset.name
-            print("Dataset: '%s' \n" %(dataset.name))
+            print(i_dataset+1,"Dataset: '%s' \n" %(dataset.name))
         
             X, y, categorical_indicator, attribute_names = dataset.get_data(
                 dataset_format='array',
