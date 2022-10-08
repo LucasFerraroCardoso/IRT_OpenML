@@ -124,7 +124,6 @@ def main(arg_data,arg_dataset,arg_dataTest,arg_saveData,arg_seed,arg_output = 'o
         openml.config.cache_directory = os.path.expanduser(os.getcwd()+'/cache')
         
         listDid = []
-        print(arg_data)
         if '.csv' in str(arg_data):
             try:
                 read = csv.reader( open(arg_data, "r"))
