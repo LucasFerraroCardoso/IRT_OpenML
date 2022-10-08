@@ -133,7 +133,7 @@ def main(arg_data,arg_dataset,arg_dataTest,arg_saveData,arg_seed,arg_output = 'o
             except IOError:
                 print('Arquivo datasets.csv não encontrado. Crie ou passe os IDs como uma lista.')
         else:
-            listDid = arg_data.split(',')
+            listDid = arg_data
     
         print('Id\'s dos datasets a serem baixados : ',listDid)
         print("Acessando o OpenML e baixando os datasets\n")
