@@ -124,16 +124,16 @@ def main(arg_data,arg_dataset,arg_dataTest,arg_saveData,arg_seed,arg_output = 'o
         openml.config.cache_directory = os.path.expanduser(os.getcwd()+'/cache')
         
         listDid = []
-        if 'csv' in str(arg_data[0]).split('.'):
+        if '.csv' in str(arg_data):
             try:
-                read = csv.reader( open(arg_data[0], "r"))
+                read = csv.reader( open(arg_data, "r"))
                 for row in read :
                     for i in row:
                         listDid.append(int(i))
             except IOError:
                 print('Arquivo datasets.csv não encontrado. Crie ou passe os IDs como uma lista.')
         else:
-            listDid = arg_data.split()
+            listDid = arg_data.split(',')
     
         print('Id\'s dos datasets a serem baixados : ',listDid)
         print("Acessando o OpenML e baixando os datasets\n")
@@ -433,4 +433,4 @@ if __name__ == '__main__':
                         default = 'output',help = 'Endereço de saida dos dados. Default = output, nesse diretório serao salvos todos os arquivos gerados.')
     
     arguments = parser.parse_args()
-    main(arguments.OpenID.split(),arguments.data,arguments.dataTest,arguments.saveData,int(arguments.seed),arguments.output)
+    main(arguments.OpenID,arguments.data,arguments.dataTest,arguments.saveData,int(arguments.seed),arguments.output)
