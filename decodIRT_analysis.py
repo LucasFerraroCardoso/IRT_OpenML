@@ -335,7 +335,7 @@ def thetaClfEstimate(dict_tmp,irt_dict,irt_resp_dict,dataset,parameter,list_thet
             items=irt_dict[dataset]
             adm_items= itens
             r_vector=item_resp
-            print(parameter)
+            #print(parameter)
             new_theta = NumericalSearchEstimator().estimate(items=items, 
                                                  administered_items= adm_items, 
                                                  response_vector=r_vector)
