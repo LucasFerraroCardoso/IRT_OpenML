@@ -87,6 +87,7 @@ def main(arg_dir = 'output',respMatrix=None,arg_url = None):
     if respMatrix == None:
         #Lista todos os diretorios de datasets da pasta output
         list_dir = os.listdir(out)
+        list_dir = [i for i in list_dir if '.' not in i]
         for path in list_dir:
         #    if os.path.exists(os.getcwd()+out+'/'+path+'/'+path+'_irt.csv'):
             try:
