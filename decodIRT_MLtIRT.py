@@ -72,7 +72,7 @@ def main(arg_dir = 'output',respMatrix=None,arg_url = None):
     
     #Lista de pacotes R para instalar
     #O pacote ltm é usado para o calculo dos parametros do IRT
-    packnames = [ltm']
+    packnames = ['ltm']
     
     #Verifica se o pacote ja esta instalado, caso não, instala
     names_to_install = [x for x in packnames if not rpackages.isinstalled(x)]
