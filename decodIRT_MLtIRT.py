@@ -72,7 +72,7 @@ def main(arg_dir = 'output',respMatrix=None,arg_url = None):
     
     #Lista de pacotes R para instalar
     #O pacote ltm é usado para o calculo dos parametros do IRT
-    packnames = ('ltm','ltm')
+    packnames = [ltm']
     
     #Verifica se o pacote ja esta instalado, caso não, instala
     names_to_install = [x for x in packnames if not rpackages.isinstalled(x)]
@@ -84,22 +84,16 @@ def main(arg_dir = 'output',respMatrix=None,arg_url = None):
     ltm = rpackages.importr('ltm')
     pandas2ri.activate()
     
-    if arg_dir != '':
-        if not os.path.exists(arg_dir):
-            os.makedirs(arg_dir)
-        out = '/'+arg_dir
-    else:
-        out = ''
     
     #Pega todos os arquivos contendo os valores para o IRT
     list_data_irt = []
     if respMatrix == None:
         #Lista todos os diretorios de datasets da pasta output
-        list_dir = os.listdir(os.getcwd()+out)
+        list_dir = os.listdir(out)
         for path in list_dir:
         #    if os.path.exists(os.getcwd()+out+'/'+path+'/'+path+'_irt.csv'):
             try:
-                read = csv.reader( open(os.getcwd()+out+'/'+path+'/'+path+'_irt.csv', "r"))
+                read = csv.reader( open(out+'/'+path+'/'+path+'_irt.csv', "r"))
                 list_data_irt.append(path+'_irt.csv')
             except IOError:
                 print('Nao foi encontrado o arquivo para calculo do irt do dataset ',path)
@@ -117,12 +111,12 @@ def main(arg_dir = 'output',respMatrix=None,arg_url = None):
         
         #Calcula os parametros do IRT com o pacote ltm do R
         if respMatrix == None:
-            file = os.getcwd()+'/'+out+'/'+list_dir[f]+'/'+list_data_irt[f]
+            file_path = out+'/'+list_dir[f]+'/'+list_data_irt[f]
         else:
-            file = formatMatrix(list_data_irt[f])
-        file = file.replace('\\','/')
+            file_path = formatMatrix(list_data_irt[f])
+        file_path = file_path.replace('\\','/')
         #try:
-        data = robjects.r('tpm(read.csv(file="'+file+'"),IRT.param = TRUE)')
+        data = robjects.r('tpm(read.csv(file="'+file_path+'"),IRT.param = TRUE)')
         #except:
          #   data = robjects.r('tpm(read.csv(file="'+file+'"),control = list(optimizer = "nlminb"))')
             
@@ -167,10 +161,10 @@ def main(arg_dir = 'output',respMatrix=None,arg_url = None):
         #break
         #Salva os parametros do IRT na pasta de cada dataset
         if respMatrix == None:
-            dataframe.transpose().to_csv(r''+os.getcwd()+out+'/'+list_dir[f]+'/irt_item_param.csv')
+            dataframe.transpose().to_csv(r''+out+'/'+list_dir[f]+'/irt_item_param.csv')
         else:
             os.remove(file)
-            dataframe.transpose().to_csv(r''+os.getcwd()+out+'/irt_item_param.csv')
+            dataframe.transpose().to_csv(r''+out+'/irt_item_param.csv')
         #Insere os dados do IRT no MongoDB
         if arg_url != None:
             try:
@@ -184,7 +178,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description = 'Ferramenta para gerar os parâmetros do TRI')
     
     parser.add_argument('-dir', action = 'store', dest = 'dir',
-                        default = 'output', required = False,
+                        default = '/output', required = False,
                         help = 'Nome do diretório onde estão as pastas dos datasets (Ex: output)')
     parser.add_argument('-respMatrix', action = 'store', dest = 'respMatrix',
                         default = None, required = False,
