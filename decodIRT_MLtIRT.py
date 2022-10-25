@@ -84,7 +84,7 @@ def main(arg_dir = 'output',respMatrix=None,arg_url = None):
     ltm = rpackages.importr('ltm')
     pandas2ri.activate()
     
-    out = argdir
+    out = arg_dir
     #Pega todos os arquivos contendo os valores para o IRT
     list_data_irt = []
     if respMatrix == None:
