@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sat Oct 26 18:20:49 2019
-
 @author: Lucas
-
 Segundo script da ferramenta decodIRT. O objetivo desse script é calcular os
 parâmetros de item para os datasets utilizados no primeiro script.
-
 Link do código-fonte: https://github.com/LucasFerraroCardoso/IRT_OpenML
 """
 
@@ -115,10 +112,11 @@ def main(arg_dir = 'output',respMatrix=None,arg_url = None):
         else:
             file_path = formatMatrix(list_data_irt[f])
         file_path = file_path.replace('\\','/')
-        #try:
-        data = robjects.r('tpm(read.csv(file="'+file_path+'"),IRT.param = TRUE)')
-        #except:
-         #   data = robjects.r('tpm(read.csv(file="'+file+'"),control = list(optimizer = "nlminb"))')
+        try:
+            data = robjects.r('tpm(read.csv(file="'+file_path+'"),IRT.param = TRUE)')
+        except:
+            #data = robjects.r('tpm(read.csv(file="'+file_path+'"),control = list(optimizer = "nlminb"))')
+            data = robjects.r('tpm(read.csv(file="'+file_path+'"), start.val = "random")')
             
         #Trata os dados dos parametros
         par = (str(data).split('\n'))
