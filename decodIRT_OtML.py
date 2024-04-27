@@ -109,7 +109,7 @@ def saveFile(lis,cols,path,name):
     df_media = pd.DataFrame(lis, columns = cols)
     df_media.to_csv(r''+path+name,index=0)
 
-def main(arg_data,arg_dataset,arg_dataTest,arg_saveData,arg_seed,arg_output = 'output'):
+def main(arg_data,arg_dataset,arg_dataTest,arg_saveData,arg_seed,arg_output,defineYes):
     
     seed(arg_seed)
     
@@ -192,12 +192,13 @@ def main(arg_data,arg_dataset,arg_dataTest,arg_saveData,arg_seed,arg_output = 'o
         else:
             X_test, y_test_label, _, features, key = encodeData(arg_dataTest)
             if len(X_test) > 500:
-                print('The test dataset has more than 500 instances. This amount can cause error when generating the item parameters.')
-                resp = input('Do you want to continue anyway? If so, press any key. If not, press n.')
-                if resp == 'n' or resp == 'N':
-                    sys.exit("Execution finished")
-                else:
-                    pass
+                if defineYes == False:
+                    print('The test dataset has more than 500 instances. This amount can cause error when generating the item parameters.')
+                    resp = input('Do you want to continue anyway? If so, press any key. If not, press n.')
+                    if resp == 'n' or resp == 'N':
+                        sys.exit("Execution finished")
+                    else:
+                        pass
             if key:
                 data_tmp = []
                 for count, value in enumerate(X):
@@ -432,6 +433,9 @@ if __name__ == '__main__':
                         help = 'Valor de seed para reproducibilidade dos experimentos (Ex: 42).')
     parser.add_argument('-output', action = 'store', dest = 'output', required = False,
                         default = 'output',help = 'Endereço de saida dos dados. Default = output, nesse diretório serao salvos todos os arquivos gerados.')
+    parser.add_argument('-y', action = 'store_true', dest = 'defineYes', 
+                        default = False, required = False,
+                        help = 'Responde sim para interacoes em tempo de execucao.')
     
     arguments = parser.parse_args()
-    main(arguments.OpenID,arguments.data,arguments.dataTest,arguments.saveData,int(arguments.seed),arguments.output)
+    main(arguments.OpenID,arguments.data,arguments.dataTest,arguments.saveData,int(arguments.seed),arguments.output,arguments.defineYes)
