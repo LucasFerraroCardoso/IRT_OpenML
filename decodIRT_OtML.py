@@ -109,7 +109,7 @@ def saveFile(lis,cols,path,name):
     df_media = pd.DataFrame(lis, columns = cols)
     df_media.to_csv(r''+path+name,index=0)
 
-def main(arg_data,arg_dataset,arg_dataTest,arg_saveData,arg_seed,arg_output,defineYes):
+def main(arg_data,arg_dataset,arg_dataTest,arg_saveData,arg_seed,arg_output,defineYes,arg_nTestInstances):
     
     seed(arg_seed)
     
@@ -180,9 +180,12 @@ def main(arg_data,arg_dataset,arg_dataTest,arg_saveData,arg_seed,arg_output,defi
                 X = np.nan_to_num(X)
             
             #Calcula split
-            split = 0.3
-            if 0.3*len(y) > 500:
-                split = float('%g' % (500/len(y)))
+            if arg_nTestInstances:
+                split = float('%g' % (arg_nTestInstances/len(y)))
+            else:
+                split = 0.3
+                if 0.3*len(y) > 500:
+                    split = float('%g' % (500/len(y)))
             
             #Split estratificado
             try:
@@ -436,6 +439,10 @@ if __name__ == '__main__':
     parser.add_argument('-y', action = 'store_true', dest = 'defineYes', 
                         default = False, required = False,
                         help = 'Responde sim para interacoes em tempo de execucao.')
+    parser.add_argument('-nTestInstances', action = 'store', dest = 'nTestInstances', 
+                        default = 0, required = False,
+                        help = 'Define a quantidade de instancias de teste (Ex: 100). Por padrão utiliza-se 30% do dataset.')
     
     arguments = parser.parse_args()
-    main(arguments.OpenID,arguments.data,arguments.dataTest,arguments.saveData,int(arguments.seed),arguments.output,arguments.defineYes)
+    main(arguments.OpenID,arguments.data,arguments.dataTest,arguments.saveData,int(arguments.seed),arguments.output,arguments.defineYes,arguments.nTestInstances)
+
