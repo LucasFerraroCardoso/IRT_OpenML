@@ -54,7 +54,7 @@ def encodeData(arg_dataset):
     key = 0
     for f in range(len(features)-1):
         
-        if data[features[f]].dtypes == np.object:
+        if data[features[f]].dtypes == object:
             key = 1
             if len(dataset) == 0:
                 num_data, meta_data = pd.factorize(list(data[features[f]]))
@@ -445,4 +445,5 @@ if __name__ == '__main__':
     
     arguments = parser.parse_args()
     main(arguments.OpenID,arguments.data,arguments.dataTest,arguments.saveData,int(arguments.seed),arguments.output,arguments.defineYes,arguments.nTestInstances)
+
 
